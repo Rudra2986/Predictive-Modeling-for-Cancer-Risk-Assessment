@@ -80,3 +80,26 @@ def save_processed_data(df, filepath):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     df.to_csv(filepath, index=False)
     print(f"Processed data saved to: {filepath}")
+
+
+def get_data_summary(df, target_col="Risk_Level"):
+    """Print a quick summary of the dataset including target distribution.
+
+    Useful for a fast sanity check at any stage of the pipeline.
+
+    Args:
+        df (pd.DataFrame): The dataset.
+        target_col (str): Name of the target column.
+    """
+    print(f"\nDataset shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Columns: {list(df.columns)}")
+
+    if target_col in df.columns:
+        print(f"\nTarget column '{target_col}' distribution:")
+        counts = df[target_col].value_counts()
+        for label, count in counts.items():
+            pct = (count / len(df)) * 100
+            print(f"  {label}: {count} ({pct:.1f}%)")
+    else:
+        print(f"\nTarget column '{target_col}' not found in dataset.")
+

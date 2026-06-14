@@ -14,7 +14,7 @@ Main entry point for the ML pipeline. Orchestrates the full workflow:
 Each step calls functions from dedicated modules in src/.
 """
 
-from src.data_ingestion import load_data, validate_data
+from src.data_ingestion import load_data, validate_data, get_data_summary
 
 # Pipeline configuration
 RAW_DATA_PATH = "data/raw/cancer-risk-factors.csv"
@@ -34,6 +34,7 @@ def run_pipeline():
     print("\n[Step 1] Loading dataset...")
     df = load_data(RAW_DATA_PATH)
     validate_data(df)
+    get_data_summary(df)
 
     # Steps 2-8 will be added as each module is implemented.
     print("\n[Pipeline] Steps 2-8 are under development.")
