@@ -50,3 +50,15 @@ build/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Logs
+*.log
+logs/
+
+# Secrets and credentials
+secrets/
+*.pem
+*.key
