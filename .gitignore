@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model artifacts (trained models should not be in version control)
+models/*.joblib
+models/*.pkl
+
+# Raw data (large datasets should not be committed)
+data/raw/*.csv
+data/raw/*.xlsx
+
+# Processed data (generated files)
+data/processed/*.csv
+data/processed/*.pkl
+
+# Generated visuals
+visuals/*.png
+visuals/*.jpg
+visuals/*.svg
+
+# Reports
+reports/*.html
+reports/*.pdf
+
+# Optuna
+*.db
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
