@@ -12,6 +12,36 @@ This project is built with a clean, modular architecture that separates each sta
 
 ---
 
+## Dataset
+
+The dataset contains 2001 patient records with 21 features covering demographics, lifestyle, environmental exposure, and genetic markers.
+
+| Feature | Description | Type |
+|---------|-------------|------|
+| Patient_ID | Unique patient identifier | ID (dropped during training) |
+| Cancer_Type | Type of cancer (Breast, Lung, Colon, Skin, Prostate) | Categorical |
+| Age | Patient age | Numeric |
+| Gender | Patient gender (0 = Female, 1 = Male) | Binary |
+| Smoking | Smoking level (0-10 scale) | Numeric |
+| Alcohol_Use | Alcohol consumption level (0-10 scale) | Numeric |
+| Obesity | Obesity level (0-10 scale) | Numeric |
+| Family_History | Family history of cancer (0 = No, 1 = Yes) | Binary |
+| Diet_Red_Meat | Red meat consumption (0-10 scale) | Numeric |
+| Diet_Salted_Processed | Salted/processed food consumption (0-10 scale) | Numeric |
+| Fruit_Veg_Intake | Fruit and vegetable intake (0-10 scale) | Numeric |
+| Physical_Activity | Physical activity level (0-10 scale) | Numeric |
+| Air_Pollution | Air pollution exposure (0-10 scale) | Numeric |
+| Occupational_Hazards | Occupational hazard exposure (0-10 scale) | Numeric |
+| BRCA_Mutation | BRCA gene mutation (0 = No, 1 = Yes) | Binary |
+| H_Pylori_Infection | H. Pylori infection (0 = No, 1 = Yes) | Binary |
+| Calcium_Intake | Calcium intake level (0-10 scale) | Numeric |
+| Overall_Risk_Score | Computed overall risk score (0-1 range) | Numeric |
+| BMI | Body Mass Index | Numeric |
+| Physical_Activity_Level | Physical activity level (alternative measure) | Numeric |
+| **Risk_Level** | **Target variable: Low, Medium, or High** | **Categorical** |
+
+---
+
 ## Architecture
 
 ```
