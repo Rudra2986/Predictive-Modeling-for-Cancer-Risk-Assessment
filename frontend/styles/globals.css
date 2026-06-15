@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-slate-50/50 text-slate-800 antialiased transition-colors duration-300;
+    font-family: var(--font-inter), sans-serif;
+  }
+  
+  body.dark {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-outfit), sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Premium Glassmorphic Cards */
+  .glass-card {
+    @apply bg-white/80 dark:bg-slate-900/85 backdrop-blur-md 
+           border border-slate-200/60 dark:border-slate-800/80 
+           shadow-sm dark:shadow-md hover:shadow-md dark:hover:shadow-lg
+           transition-all duration-300 rounded-2xl;
+  }
+
+  .interactive-button {
+    @apply px-4 py-2.5 rounded-xl font-medium shadow-sm 
+           transition-all duration-200 active:scale-[0.98]
+           hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-500/40;
+  }
+  
+  /* Input fields with state styling */
+  .clinical-input {
+    @apply w-full px-4 py-2.5 bg-white dark:bg-slate-900/60 
+           border border-slate-200 dark:border-slate-800 
+           rounded-xl shadow-sm text-slate-800 dark:text-slate-100 
+           focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 
+           transition-all duration-300;
+  }
+
+  /* Custom Risk Indicator Badges */
+  .badge-low {
+    @apply px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/20 dark:border-emerald-800/20;
+  }
+
+  .badge-medium {
+    @apply px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200/20 dark:border-amber-800/20;
+  }
+
+  .badge-high {
+    @apply px-2.5 py-1 text-xs font-semibold rounded-full bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200/20 dark:border-red-800/20;
+  }
+}
+
+/* Micro-animations and utilities */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-800 rounded-full;
+}
