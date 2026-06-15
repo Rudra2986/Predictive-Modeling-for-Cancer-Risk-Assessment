@@ -91,6 +91,9 @@ def test_api_workflow():
         assert pred_data["prediction"] in ["Low", "Medium", "High"]
         assert "confidence_score" in pred_data
         assert "contributing_factors" in pred_data
+        assert len(pred_data["contributing_factors"]) > 0
+        assert "shap_value" in pred_data["contributing_factors"][0]
+        assert isinstance(pred_data["contributing_factors"][0]["shap_value"], float)
         assert "explanation_narrative" in pred_data
         
         # 6. Test model prediction as authenticated user
@@ -112,6 +115,18 @@ def test_api_workflow():
         assert "risk_distribution" in analytics
         assert "trends" in analytics
         assert len(analytics["recent_runs"]) >= 1
+        
+        # 9. Test admin retrain status retrieval
+        resp = client.get("/api/admin/retrain/status", headers=headers)
+        assert resp.status_code == 200
+        status_data = resp.json()
+        assert "is_training" in status_data
+        assert "logs" in status_data
+        assert isinstance(status_data["logs"], list)
+        
+        # 10. Test triggering admin retraining
+        resp = client.post("/api/admin/retrain", headers=headers)
+        assert resp.status_code in [202, 409]
         
     finally:
         # Cleanup test entries

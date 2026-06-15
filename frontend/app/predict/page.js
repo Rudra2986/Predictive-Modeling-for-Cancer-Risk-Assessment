@@ -441,16 +441,15 @@ export default function PredictPage() {
                 </p>
               </div>
             </div>
-
-            {/* Right Column - Contributing Bar Chart */}
+            {/* Right Column - Clinical SHAP Explainability Chart */}
             <div className="lg:col-span-7 space-y-6">
               <div className="glass-card p-6 space-y-4 flex flex-col h-full justify-between">
                 <div className="space-y-1.5">
                   <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350 flex items-center space-x-1.5">
                     <Award className="h-5 w-5 text-brand-655" />
-                    <span>Contributing Risk Factors</span>
+                    <span>Clinical SHAP Explainability</span>
                   </h3>
-                  <p className="text-xs text-slate-400">Localized model weight distribution relative to the patient profile triggers</p>
+                  <p className="text-xs text-slate-400">Relative risk impact (positive values drive risk up, negative values drive risk down)</p>
                 </div>
 
                 {/* Recharts Bar Chart */}
@@ -461,8 +460,8 @@ export default function PredictPage() {
                       layout="vertical"
                       margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                      <XAxis type="number" domain={[0, 10]} hide />
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={true} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                      <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
                       <YAxis 
                         dataKey="factor" 
                         type="category" 
@@ -480,10 +479,14 @@ export default function PredictPage() {
                           color: '#fff'
                         }}
                         labelStyle={{ color: '#94a3b8' }}
+                        formatter={(value) => [value.toFixed(4), "SHAP Contribution"]}
                       />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={14}>
+                      <Bar dataKey="shap_value" radius={4} barSize={14}>
                         {result.contributing_factors.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={getBarColor(entry.impact_level)} />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.shap_value > 0 ? '#ef4444' : '#10b981'} 
+                          />
                         ))}
                       </Bar>
                     </BarChart>
@@ -492,9 +495,8 @@ export default function PredictPage() {
 
                 {/* Factors Legend */}
                 <div className="flex items-center justify-end space-x-6 text-[10px] uppercase font-bold tracking-widest pt-4 border-t border-slate-200/50 dark:border-slate-800">
-                  <span className="flex items-center space-x-1.5 text-emerald-500"><div className="h-2 w-2 rounded-full bg-emerald-500" /><span>Low Impact</span></span>
-                  <span className="flex items-center space-x-1.5 text-amber-500"><div className="h-2 w-2 rounded-full bg-amber-500" /><span>Medium Impact</span></span>
-                  <span className="flex items-center space-x-1.5 text-red-500"><div className="h-2 w-2 rounded-full bg-red-500" /><span>High Impact</span></span>
+                  <span className="flex items-center space-x-1.5 text-emerald-500"><div className="h-2 w-2 rounded-full bg-emerald-500" /><span>Protective (Mitigates Risk)</span></span>
+                  <span className="flex items-center space-x-1.5 text-red-500"><div className="h-2 w-2 rounded-full bg-red-500" /><span>Promoting (Increases Risk)</span></span>
                 </div>
               </div>
             </div>

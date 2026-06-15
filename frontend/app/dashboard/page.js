@@ -14,6 +14,12 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Retrain states
+  const [retrainStatus, setRetrainStatus] = useState(null);
+  const [polling, setPolling] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [trialsPerModel, setTrialsPerModel] = useState(15);
+
   useEffect(() => {
     const checkAuthAndFetch = async () => {
       const token = getToken();
@@ -25,6 +31,12 @@ export default function Dashboard() {
       try {
         const data = await api.get('/predictions/analytics');
         setAnalytics(data);
+
+        const status = await api.get('/admin/retrain/status');
+        setRetrainStatus(status);
+        if (status.is_training) {
+          setPolling(true);
+        }
       } catch (err) {
         setError(err.message || 'Failed to fetch analytics statistics.');
       } finally {
@@ -34,6 +46,41 @@ export default function Dashboard() {
 
     checkAuthAndFetch();
   }, [router]);
+
+  useEffect(() => {
+    let intervalId = null;
+    if (polling) {
+      intervalId = setInterval(async () => {
+        try {
+          const status = await api.get('/admin/retrain/status');
+          setRetrainStatus(status);
+          if (!status.is_training) {
+            setPolling(false);
+            // Refresh stats on complete
+            const freshAnalytics = await api.get('/predictions/analytics');
+            setAnalytics(freshAnalytics);
+          }
+        } catch (err) {
+          console.error("Polling retrain status failed:", err);
+        }
+      }, 1500);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [polling]);
+
+  const handleRetrain = async () => {
+    setActionError('');
+    try {
+      await api.post('/admin/retrain', { trials_per_model: parseInt(trialsPerModel) });
+      setPolling(true);
+      const status = await api.get('/admin/retrain/status');
+      setRetrainStatus(status);
+    } catch (err) {
+      setActionError(err.message || 'Failed to trigger model retraining.');
+    }
+  };
 
   if (loading) {
     return (
@@ -211,6 +258,114 @@ export default function Dashboard() {
             })}
           </div>
         </div>
+      </div>
+
+      {/* Admin Retrain Widget */}
+      <div className="glass-card p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/50 dark:border-slate-800/80 pb-4">
+          <div>
+            <h3 className="text-base font-bold text-slate-700 dark:text-slate-350 flex items-center space-x-2">
+              <Activity className="h-5 w-5 text-brand-600 dark:text-brand-500 animate-pulse" />
+              <span>OncoRisk ML Engine Administration</span>
+            </h3>
+            <p className="text-xs text-slate-450 mt-0.5">Retrain models and run hyperparameter tuning with Optuna optimization</p>
+          </div>
+          <div className="flex items-center space-x-3 self-start sm:self-auto">
+            <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl">
+              <label className="text-[10px] uppercase font-bold text-slate-450 whitespace-nowrap">Trials / Model:</label>
+              <input
+                type="number"
+                min="5"
+                max="100"
+                className="w-10 text-xs font-bold text-center bg-transparent border-none focus:outline-none text-slate-850 dark:text-slate-200"
+                value={trialsPerModel}
+                onChange={(e) => setTrialsPerModel(Math.max(5, Math.min(100, parseInt(e.target.value) || 5)))}
+                disabled={polling || (retrainStatus && retrainStatus.is_training)}
+              />
+            </div>
+            <button
+              onClick={handleRetrain}
+              disabled={polling || (retrainStatus && retrainStatus.is_training)}
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 disabled:opacity-50 text-white font-bold rounded-xl shadow-md transition-all active:scale-[0.98] text-xs flex items-center justify-center space-x-1.5"
+            >
+              <span>Retrain ML Engine</span>
+            </button>
+          </div>
+        </div>
+
+        {actionError && (
+          <div className="text-xs text-red-500 bg-red-50 dark:bg-red-950/20 p-3.5 rounded-xl border border-red-200/50">
+            {actionError}
+          </div>
+        )}
+
+        {retrainStatus && (retrainStatus.is_training || retrainStatus.winner_model !== "None") && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* Status summaries */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
+                  <span className="text-slate-450 font-medium">Status:</span>
+                  <span className={`font-bold ${retrainStatus.is_training ? 'text-brand-650 dark:text-brand-400 animate-pulse' : 'text-emerald-500'}`}>
+                    {retrainStatus.is_training ? `Training - ${retrainStatus.current_step}` : 'Successfully Completed'}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
+                  <span className="text-slate-450 font-medium">Study Trials:</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200">
+                    {retrainStatus.current_trial} / {retrainStatus.total_trials} (Optuna Search)
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
+                  <span className="text-slate-450 font-medium">Best Random Forest F1:</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200">
+                    {retrainStatus.best_rf_f1 > 0 ? retrainStatus.best_rf_f1.toFixed(4) : "Pending"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
+                  <span className="text-slate-450 font-medium">Best XGBoost F1:</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200">
+                    {retrainStatus.best_xgb_f1 > 0 ? retrainStatus.best_xgb_f1.toFixed(4) : "Pending"}
+                  </span>
+                </div>
+              </div>
+
+              {retrainStatus.winner_model !== "None" && (
+                <div className="bg-brand-50/50 dark:bg-brand-950/10 border border-brand-200/40 dark:border-brand-900/30 p-4 rounded-2xl space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-brand-600 dark:text-brand-400">Deployed Winner Model</span>
+                  <div className="text-lg font-black text-slate-800 dark:text-white flex items-center justify-between">
+                    <span>{retrainStatus.winner_model}</span>
+                    <span className="text-emerald-500 font-bold text-sm">F1: {retrainStatus.best_f1.toFixed(4)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Terminal console logger */}
+            <div className="lg:col-span-7 flex flex-col">
+              <div className="relative flex flex-col flex-1 p-4 bg-slate-950 border border-slate-900 rounded-2xl w-full h-56 font-mono text-[10px] leading-relaxed shadow-inner select-none text-slate-400 overflow-y-auto overflow-x-hidden">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-900 mb-2 text-slate-500 text-[9px] uppercase tracking-wider">
+                  <span>Optuna Trials Console Log</span>
+                  {retrainStatus.is_training && <span className="h-2 w-2 rounded-full bg-brand-650 dark:bg-brand-400 animate-ping" />}
+                </div>
+                <div className="space-y-1">
+                  {retrainStatus.logs?.length === 0 ? (
+                    <p className="text-slate-650">Console idle. Awaiting command execution...</p>
+                  ) : (
+                    retrainStatus.logs?.slice(-100).map((log, i) => (
+                      <p key={i} className={log.includes("ERROR") ? "text-red-400" : log.includes("Winner") || log.includes("completed") ? "text-emerald-400" : "text-slate-350"}>
+                        {log}
+                      </p>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Recent Activity Table */}

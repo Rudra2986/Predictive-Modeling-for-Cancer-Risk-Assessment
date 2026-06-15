@@ -65,6 +65,7 @@ class ContributingFactorSchema(BaseModel):
     value: float
     impact_level: str
     impact: str  # For spec compatibility (Low, Medium, High)
+    shap_value: float  # Dynamic SHAP value contribution
 
 class PredictionResponseSchema(BaseModel):
     prediction: str
@@ -123,7 +124,8 @@ def predict_cancer_risk(
                 "category": factor["category"],
                 "value": float(factor["value"]),
                 "impact_level": factor["impact_level"],
-                "impact": factor["impact_level"]
+                "impact": factor["impact_level"],
+                "shap_value": float(factor.get("shap_value", 0.0))
             })
             
         explanation_narrative = explanation.get("explanation_narrative", "")
