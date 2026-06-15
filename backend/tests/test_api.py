@@ -1,0 +1,142 @@
+import os
+import sys
+
+# Ensure project root is in the Python path
+sys.path.append(os.getcwd())
+
+from fastapi.testclient import TestClient
+from backend.main import app
+from backend.database.session import get_db, SessionLocal
+from backend.models.user import User
+from backend.models.prediction_log import PredictionLog
+
+client = TestClient(app)
+
+def test_health_check():
+    """
+    Verify health endpoint works.
+    """
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "version": "1.0.0"}
+
+def test_api_workflow():
+    """
+    Verify full user registration, authentication, ML prediction,
+    and history/analytics endpoints flow.
+    """
+    db = SessionLocal()
+    
+    # 1. Clean up any previous test user
+    test_email = "api_integration_test@oncorisk.ai"
+    existing = db.query(User).filter(User.email == test_email).first()
+    if existing:
+        db.delete(existing)
+        db.commit()
+        
+    try:
+        # 2. Test user registration
+        register_payload = {
+            "email": test_email,
+            "password": "integration_test_password"
+        }
+        resp = client.post("/api/auth/register", json=register_payload)
+        assert resp.status_code == 201
+        user_data = resp.json()
+        assert user_data["email"] == test_email
+        assert "id" in user_data
+        
+        # 3. Test user login
+        login_payload = {
+            "email": test_email,
+            "password": "integration_test_password"
+        }
+        resp = client.post("/api/auth/login", json=login_payload)
+        assert resp.status_code == 200
+        token_data = resp.json()
+        assert "access_token" in token_data
+        token = token_data["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        # 4. Test current user /me endpoint
+        resp = client.get("/api/auth/me", headers=headers)
+        assert resp.status_code == 200
+        assert resp.json()["email"] == test_email
+        
+        # 5. Test model prediction as guest
+        prediction_payload = {
+            "Age": 55,
+            "Gender": 1,
+            "Smoking": 7,
+            "Alcohol_Use": 9,
+            "Obesity": 8,
+            "Family_History": 0,
+            "Diet_Red_Meat": 4,
+            "Diet_Salted_Processed": 6,
+            "Fruit_Veg_Intake": 3,
+            "Physical_Activity": 2,
+            "Air_Pollution": 2,
+            "Occupational_Hazards": 10,
+            "BRCA_Mutation": 0,
+            "H_Pylori_Infection": 0,
+            "Calcium_Intake": 4,
+            "BMI": 27.0,
+            "Physical_Activity_Level": 6,
+            "Cancer_Type": "Lung"
+        }
+        resp = client.post("/api/predict", json=prediction_payload)
+        assert resp.status_code == 200
+        pred_data = resp.json()
+        assert "prediction" in pred_data
+        assert pred_data["prediction"] in ["Low", "Medium", "High"]
+        assert "confidence_score" in pred_data
+        assert "contributing_factors" in pred_data
+        assert "explanation_narrative" in pred_data
+        
+        # 6. Test model prediction as authenticated user
+        resp = client.post("/api/predict", json=prediction_payload, headers=headers)
+        assert resp.status_code == 200
+        
+        # 7. Test history retrieval
+        resp = client.get("/api/predictions/history", headers=headers)
+        assert resp.status_code == 200
+        history = resp.json()
+        assert len(history) >= 1
+        assert history[0]["patient_data"]["Age"] == 55
+        
+        # 8. Test analytics query
+        resp = client.get("/api/predictions/analytics", headers=headers)
+        assert resp.status_code == 200
+        analytics = resp.json()
+        assert analytics["total_assessments"] >= 1
+        assert "risk_distribution" in analytics
+        assert "trends" in analytics
+        assert len(analytics["recent_runs"]) >= 1
+        
+    finally:
+        # Cleanup test entries
+        test_user = db.query(User).filter(User.email == test_email).first()
+        if test_user:
+            # Cascading delete handles prediction logs as well
+            db.delete(test_user)
+            db.commit()
+        db.close()
+
+if __name__ == "__main__":
+    print("--- Starting API Integration Tests ---")
+    try:
+        print("[Step 1] Running test_health_check...")
+        test_health_check()
+        print("  Success: Health check working.")
+
+        print("[Step 2] Running test_api_workflow...")
+        test_api_workflow()
+        print("  Success: Full API authentication, prediction, and analytics cycle working.")
+
+        print("\nAll integration tests passed successfully!")
+    except AssertionError as e:
+        print(f"\nAssertion Error: Test validation failed! {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\nUnexpected Error during testing: {e}")
+        sys.exit(1)

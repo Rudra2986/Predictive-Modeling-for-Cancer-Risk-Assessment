@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.utils.config import settings
+from backend.api import auth, predict, predictions
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -17,6 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include API routers under the '/api' prefix
+app.include_router(auth.router, prefix="/api")
+app.include_router(predict.router, prefix="/api")
+app.include_router(predictions.router, prefix="/api")
+
 @app.get("/")
 def read_root():
     return {"status": "healthy", "service": settings.PROJECT_NAME}
@@ -24,3 +30,4 @@ def read_root():
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "version": settings.VERSION}
+
