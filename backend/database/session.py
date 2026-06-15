@@ -1,13 +1,24 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.exc import OperationalError
 from backend.utils.config import settings
 
-# Create engine
-# pool_pre_ping=True helps prevent connection drops
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True
-)
+# Determine connection URL and configuration
+DATABASE_URL = settings.DATABASE_URL
+engine_args = {"pool_pre_ping": True}
+
+try:
+    # Attempt to initialize and connect to PostgreSQL
+    engine = create_engine(DATABASE_URL, **engine_args)
+    # Quick test connection ping
+    with engine.connect() as conn:
+        pass
+    print("Database: Successfully connected to PostgreSQL.")
+except (OperationalError, Exception):
+    print("Database Warning: Local PostgreSQL server is unreachable. Falling back to local SQLite database (oncorisk.db).")
+    DATABASE_URL = "sqlite:///oncorisk.db"
+    engine_args = {"connect_args": {"check_same_thread": False}}
+    engine = create_engine(DATABASE_URL, **engine_args)
 
 SessionLocal = sessionmaker(
     autocommit=False,
