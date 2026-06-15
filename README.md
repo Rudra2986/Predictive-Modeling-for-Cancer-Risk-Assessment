@@ -1,226 +1,195 @@
-# OncoRisk ML
+# OncoRisk AI
 
-A modular, end-to-end machine learning system for predicting cancer risk levels (Low, Medium, High) using patient demographic, behavioral, and health-related data.
+OncoRisk AI is a production-grade healthcare AI platform focused on predictive modeling for cancer risk assessment using machine learning. The platform utilizes demographic, lifestyle, and health-related clinical patient profiles to predict cancer risk levels (Low, Medium, High) along with confidence scores and explainable model metrics.
 
----
-
-## Overview
-
-OncoRisk ML takes structured patient data and runs it through a complete ML pipeline -- from data ingestion and preprocessing through model training, evaluation, and a web-based prediction interface. The system compares three models (Logistic Regression, Random Forest, XGBoost) and selects the best performer using robust evaluation metrics.
-
-This project is built with a clean, modular architecture that separates each stage of the ML workflow into independent, reusable modules.
+The platform is designed using a clean, decoupled architecture:
+1. **Frontend Dashboard:** A responsive Next.js web application utilizing Tailwind CSS for minimal styling, Framer Motion for micro-animations, and Recharts for interactive clinical charts.
+2. **FastAPI Backend:** An asynchronous REST API executing data processing pipelines and loading serialized machine learning models.
+3. **ML Prediction Engine:** A modular pipeline utilizing Scikit-learn, XGBoost, and SMOTE for class imbalance handling, optimized using Optuna hyperparameter search.
+4. **Local PostgreSQL Database:** Relational persistent storage mapped via SQLAlchemy ORM for patient query logs and audits.
 
 ---
 
-## Dataset
-
-The dataset contains 2001 patient records with 21 features covering demographics, lifestyle, environmental exposure, and genetic markers.
-
-| Feature | Description | Type |
-|---------|-------------|------|
-| Patient_ID | Unique patient identifier | ID (dropped during training) |
-| Cancer_Type | Type of cancer (Breast, Lung, Colon, Skin, Prostate) | Categorical |
-| Age | Patient age | Numeric |
-| Gender | Patient gender (0 = Female, 1 = Male) | Binary |
-| Smoking | Smoking level (0-10 scale) | Numeric |
-| Alcohol_Use | Alcohol consumption level (0-10 scale) | Numeric |
-| Obesity | Obesity level (0-10 scale) | Numeric |
-| Family_History | Family history of cancer (0 = No, 1 = Yes) | Binary |
-| Diet_Red_Meat | Red meat consumption (0-10 scale) | Numeric |
-| Diet_Salted_Processed | Salted/processed food consumption (0-10 scale) | Numeric |
-| Fruit_Veg_Intake | Fruit and vegetable intake (0-10 scale) | Numeric |
-| Physical_Activity | Physical activity level (0-10 scale) | Numeric |
-| Air_Pollution | Air pollution exposure (0-10 scale) | Numeric |
-| Occupational_Hazards | Occupational hazard exposure (0-10 scale) | Numeric |
-| BRCA_Mutation | BRCA gene mutation (0 = No, 1 = Yes) | Binary |
-| H_Pylori_Infection | H. Pylori infection (0 = No, 1 = Yes) | Binary |
-| Calcium_Intake | Calcium intake level (0-10 scale) | Numeric |
-| Overall_Risk_Score | Computed overall risk score (0-1 range) | Numeric |
-| BMI | Body Mass Index | Numeric |
-| Physical_Activity_Level | Physical activity level (alternative measure) | Numeric |
-| **Risk_Level** | **Target variable: Low, Medium, or High** | **Categorical** |
-
----
-
-## Architecture
+## System Architecture
 
 ```
-Dataset (CSV)
-    |
-    v
-Data Ingestion --> load, validate, check for issues
-    |
-    v
-Preprocessing --> clean, encode, scale, split
-    |
-    v
-EDA --> statistical summaries, visualizations
-    |
-    v
-SMOTE --> balance class distribution (training data only)
-    |
-    v
-Model Training --> Logistic Regression, Random Forest, XGBoost
-    |
-    v
-Hyperparameter Tuning --> Optuna (Bayesian optimization)
-    |
-    v
-Evaluation --> Accuracy, Recall, F1-Score, Confusion Matrix
-    |
-    v
-Save Best Model --> Joblib serialization
-    |
-    v
-Streamlit App --> user inputs patient data, gets risk prediction
+User (Web Browser)
+       │
+       ▼
+┌────────────────────────────────────────┐
+│ Next.js Frontend Dashboard (App Router)│
+└───────────────────┬────────────────────┘
+                    │
+            HTTPS REST Request
+                    │
+                    ▼
+┌────────────────────────────────────────┐
+│        FastAPI REST Backend            │
+│ ┌────────────────────────────────────┐ │
+│ │        ML Prediction Engine        │ │
+│ │   - Custom Preprocessing Pipeline  │ │
+│ │   - XGBoost Classifier Inference   │ │
+│ └──────────────────┬─────────────────┘ │
+└────────────────────┼───────────────────┘
+                     │
+              SQLAlchemy ORM
+                     │
+                     ▼
+┌────────────────────────────────────────┐
+│        PostgreSQL Database             │
+└────────────────────────────────────────┘
 ```
 
 ---
 
-## Project Structure
+## Repository Structure
 
 ```
-Predictive-Modeling-for-Cancer-Risk-Assessment/
-|
-|-- data/
-|   |-- raw/                    # Original dataset (not tracked in Git)
-|   |-- processed/              # Cleaned and transformed data
-|
-|-- notebooks/                  # Jupyter notebooks for exploration
-|
-|-- src/
-|   |-- __init__.py
-|   |-- data_ingestion.py       # Load and validate raw data
-|   |-- preprocessing.py        # Clean, encode, scale, split
-|   |-- eda.py                  # Exploratory data analysis and plots
-|   |-- smote_handler.py        # Class imbalance handling with SMOTE
-|   |-- train_model.py          # Train multiple ML models
-|   |-- tune_model.py           # Hyperparameter tuning with Optuna
-|   |-- evaluate_model.py       # Metrics, confusion matrix, comparison
-|   |-- predict.py              # Run predictions on new data
-|   |-- utils.py                # Model save/load utilities
-|
-|-- models/                     # Saved model artifacts (not tracked in Git)
-|
-|-- visuals/                    # Generated plots and charts
-|
-|-- app/
-|   |-- app.py                  # Streamlit web application
-|   |-- components/             # Reusable UI components
-|   |-- assets/                 # Static files for the app
-|
-|-- reports/                    # Generated analysis reports
-|
-|-- requirements.txt            # Python dependencies
-|-- main.py                     # Pipeline entry point
-|-- .gitignore
-|-- README.md
+OncoRisk-AI/
+│
+├── frontend/             # Next.js Web Dashboard
+│   ├── app/              # App Router Pages
+│   ├── components/       # Reusable UI Components
+│   ├── animations/       # Framer Motion Configs
+│   ├── charts/           # Recharts Visualizations
+│   ├── public/           # Static Assets
+│   └── styles/           # Global Styling
+│
+├── backend/              # FastAPI Application
+│   ├── api/              # Route Handlers & Controllers
+│   ├── models/           # SQLAlchemy DB Models & Schemas
+│   ├── ml/               # Model Inference & Saved Pipelines
+│   ├── database/         # Session Configuration & Migrations
+│   ├── services/         # Business Logic Layer
+│   ├── utils/            # Shared Helpers (Logging, Security)
+│   └── main.py           # Application Entrypoint
+│
+├── datasets/             # Data Assets
+│   ├── raw/              # Raw CSV Dataset Files
+│   └── processed/        # Processed/Cleaned Splits
+│
+├── notebooks/            # Jupyter Notebooks for EDA
+│
+├── deployment/           # Deployment Configurations
+│   └── configs/          # Docker & Reverse Proxy Configs
+│
+├── reports/              # Model Validation & Metric Reports
+│
+├── README.md             # Project Documentation
+├── requirements.txt      # Python Package Dependencies
+├── .gitignore            # Git Excluded Path Configurations
+└── docker-compose.yml    # Local Infrastructure Orchestration
 ```
 
 ---
 
-## ML Workflow
+## Machine Learning Workflow
 
-### 1. Data Ingestion
-Load the raw CSV dataset and run validation checks (missing values, duplicates, data types).
-
-### 2. Preprocessing
-- Drop unnecessary columns (Patient ID)
-- Encode categorical features
-- Scale numerical features using StandardScaler
-- Split into train/test sets (80/20, stratified)
-
-### 3. Exploratory Data Analysis
-- Class distribution (Low vs Medium vs High)
-- Feature correlation heatmap
-- Distribution plots per feature
-- Summary statistics
-
-### 4. SMOTE (Class Balancing)
-Apply Synthetic Minority Oversampling to the training set only to address class imbalance.
-
-### 5. Model Training
-Train three models with default parameters:
-- Logistic Regression (linear baseline)
-- Random Forest (ensemble, non-linear)
-- XGBoost (gradient boosting)
-
-### 6. Hyperparameter Tuning
-Use Optuna to optimize Random Forest and XGBoost hyperparameters through Bayesian search.
-
-### 7. Evaluation
-Compare all models using:
-- Accuracy
-- Recall (critical for medical risk -- minimize missed high-risk cases)
-- F1-Score
-- Confusion Matrix
-
-### 8. Model Persistence
-Save the best-performing model and fitted scaler using Joblib for use in the Streamlit app.
+The pipeline utilizes historical patient clinical variables to train a classifier to predict risk levels:
+1. **Ingestion & Validation:** Load dataset containing lifestyle factors (Smoking, Diet, Obesity, Alcohol Use) and clinical inputs (BRCA Mutation, H. Pylori Infection, BRCA status, Calcium intake).
+2. **Data Preprocessing:** Impute missing values, scale numeric columns, and perform one-hot encoding on categorical features using a pipeline serialization class.
+3. **Class Imbalance Handling:** Apply Synthetic Minority Over-sampling Technique (SMOTE) to prevent majority-class bias.
+4. **Model Tuning & Training:** Run hyperparameter tuning on Random Forest and XGBoost architectures using Optuna, searching across learning rate, depth, and regularization factors.
+5. **Model Evaluation:** Produce classification reports (Accuracy, Recall, Precision, F1-Score), confusion matrix matrices, and compute SHAP/feature importance metrics.
 
 ---
 
-## Screenshots
+## API Documentation
 
-> Screenshots will be added as each module is completed.
+FastAPI automatically generates interactive Swagger API documentation when the backend runs.
+
+### Endpoint Specifications
+
+#### 1. System Health
+* **URL:** `/api/health`
+* **Method:** `GET`
+* **Response:**
+  ```json
+  {
+    "status": "ok",
+    "version": "1.0.0"
+  }
+  ```
+
+#### 2. Model Prediction
+* **URL:** `/api/predict`
+* **Method:** `POST`
+* **Request Body:**
+  ```json
+  {
+    "Age": 55,
+    "Gender": 1,
+    "Smoking": 7,
+    "Alcohol_Use": 9,
+    "Obesity": 8,
+    "Family_History": 0,
+    "Diet_Red_Meat": 4,
+    "Diet_Salted_Processed": 6,
+    "Fruit_Veg_Intake": 3,
+    "Physical_Activity": 2,
+    "Air_Pollution": 2,
+    "Occupational_Hazards": 10,
+    "BRCA_Mutation": 0,
+    "H_Pylori_Infection": 0,
+    "Calcium_Intake": 4,
+    "BMI": 27.0,
+    "Physical_Activity_Level": 6
+  }
+  ```
+* **Response:**
+  ```json
+  {
+    "prediction": "High",
+    "confidence_score": 0.88,
+    "contributing_factors": [
+      {"factor": "Obesity", "impact": "High"},
+      {"factor": "Smoking", "impact": "Medium"}
+    ]
+  }
+  ```
 
 ---
 
-## Installation
+## Local Development Setup
 
+### Infrastructure Setup
+Start the local PostgreSQL database using Docker:
 ```bash
-# Clone the repository
-git clone https://github.com/Rudra2986/Predictive-Modeling-for-Cancer-Risk-Assessment.git
-cd Predictive-Modeling-for-Cancer-Risk-Assessment
-
-# Create a virtual environment (recommended)
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
-
-# Install dependencies
-pip install -r requirements.txt
+docker compose up -d
 ```
 
-## Usage
+### Backend Setup
+1. Create a Python virtual environment:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the FastAPI development server:
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
 
-```bash
-# Run the full ML pipeline
-python main.py
-
-# Launch the Streamlit app
-streamlit run app/app.py
-```
-
----
-
-## Tech Stack
-
-| Tool | Purpose |
-|------|---------|
-| Python | Core language |
-| Pandas | Data manipulation |
-| NumPy | Numerical operations |
-| Scikit-learn | ML models, preprocessing, evaluation |
-| XGBoost | Gradient boosting model |
-| Imbalanced-learn | SMOTE for class balancing |
-| Optuna | Hyperparameter tuning |
-| Streamlit | Web application |
-| Joblib | Model serialization |
-| Matplotlib / Seaborn | Visualizations |
-
----
-
-## Future Scope
-
-- Add more models (LightGBM, CatBoost)
-- Implement SHAP-based model explainability
-- Add patient data upload feature in the Streamlit app
-- Integrate CI/CD for automated testing
-- Deploy to cloud infrastructure
+### Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install NPM packages:
+   ```bash
+   npm install
+   ```
+3. Start the Next.js development server:
+   ```bash
+   npm run dev
+   ```
 
 ---
 
-## License
-
-This project is for educational and portfolio purposes.
+## Future Improvements
+- Integrate SHAP (SHapley Additive exPlanations) directly in the REST API response for advanced mathematical explainability.
+- Add multi-tenant JWT-based database authentication.
+- Implement CI/CD automated pipeline for running Optuna search automatically when dataset updates.
