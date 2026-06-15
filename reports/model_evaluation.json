@@ -1,0 +1,79 @@
+{
+    "model_name": "XGBoost",
+    "weighted_f1": 0.8789914529914529,
+    "accuracy": 0.885,
+    "classification_report": {
+        "Low": {
+            "precision": 0.7884615384615384,
+            "recall": 0.6307692307692307,
+            "f1-score": 0.7008547008547008,
+            "support": 65.0
+        },
+        "Medium": {
+            "precision": 0.9014925373134328,
+            "recall": 0.9587301587301588,
+            "f1-score": 0.9292307692307692,
+            "support": 315.0
+        },
+        "High": {
+            "precision": 0.8461538461538461,
+            "recall": 0.55,
+            "f1-score": 0.6666666666666666,
+            "support": 20.0
+        },
+        "accuracy": 0.885,
+        "macro avg": {
+            "precision": 0.8453693073096059,
+            "recall": 0.7131664631664633,
+            "f1-score": 0.7655840455840455,
+            "support": 400.0
+        },
+        "weighted avg": {
+            "precision": 0.8803580654420206,
+            "recall": 0.885,
+            "f1-score": 0.8789914529914529,
+            "support": 400.0
+        }
+    },
+    "confusion_matrix": [
+        [
+            41,
+            24,
+            0
+        ],
+        [
+            11,
+            302,
+            2
+        ],
+        [
+            0,
+            9,
+            11
+        ]
+    ],
+    "feature_importances": {
+        "Air_Pollution": 0.15052445232868195,
+        "Family_History": 0.09568840265274048,
+        "Gender": 0.0781627893447876,
+        "Alcohol_Use": 0.07304694503545761,
+        "Diet_Salted_Processed": 0.06480930000543594,
+        "Smoking": 0.05391627177596092,
+        "H_Pylori_Infection": 0.05175458639860153,
+        "Cancer_Type_Lung": 0.048208773136138916,
+        "Cancer_Type_Skin": 0.04644116386771202,
+        "Occupational_Hazards": 0.042219262570142746,
+        "Diet_Red_Meat": 0.04195838421583176,
+        "Obesity": 0.038330305367708206,
+        "Cancer_Type_Colon": 0.035931386053562164,
+        "Cancer_Type_Prostate": 0.030444728210568428,
+        "Physical_Activity": 0.023637551814317703,
+        "Cancer_Type_Breast": 0.022973885759711266,
+        "Fruit_Veg_Intake": 0.0212221909314394,
+        "Physical_Activity_Level": 0.017844071611762047,
+        "Calcium_Intake": 0.017096489667892456,
+        "BRCA_Mutation": 0.016424035653471947,
+        "BMI": 0.015953850001096725,
+        "Age": 0.013411150313913822
+    }
+}
