@@ -41,6 +41,26 @@ export default function PredictPage() {
     }));
   };
 
+  const validateStep = (step) => {
+    if (step === 0) {
+      if (!formData.Cancer_Type) {
+        setError("Please select a suspected Cancer Type.");
+        return false;
+      }
+      const ageVal = parseInt(formData.Age);
+      if (isNaN(ageVal) || ageVal < 1 || ageVal > 120) {
+        setError("Please enter a valid Patient Age between 1 and 120.");
+        return false;
+      }
+      const bmiVal = parseFloat(formData.BMI);
+      if (isNaN(bmiVal) || bmiVal < 10.0 || bmiVal > 60.0) {
+        setError("Please enter a valid Body Mass Index (BMI) between 10.0 and 60.0.");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const tabs = [
     { label: "Demographics & Vitals", icon: User },
     { label: "Lifestyle & Diet", icon: Dumbbell },
@@ -50,6 +70,23 @@ export default function PredictPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // If not on the final step, advance step instead of submitting
+    if (activeTab < tabs.length - 1) {
+      if (validateStep(activeTab)) {
+        setActiveTab(prev => prev + 1);
+      }
+      return;
+    }
+
+    // Run all step validations before final submit
+    for (let i = 0; i <= activeTab; i++) {
+      if (!validateStep(i)) {
+        setActiveTab(i);
+        return;
+      }
+    }
+
     setLoading(true);
     setResult(null);
 
@@ -155,7 +192,16 @@ export default function PredictPage() {
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setActiveTab(idx)}
+                    onClick={() => {
+                      setError('');
+                      if (idx > activeTab) {
+                        if (!validateStep(activeTab)) return;
+                        for (let i = activeTab; i < idx; i++) {
+                          if (!validateStep(i)) return;
+                        }
+                      }
+                      setActiveTab(idx);
+                    }}
                     className={`flex items-center space-x-1.5 px-4 py-3 border-b-2 font-medium text-sm transition-all whitespace-nowrap ${
                       isSelected
                         ? 'border-brand-600 text-brand-700 dark:text-brand-400 dark:border-brand-500'
@@ -337,9 +383,13 @@ export default function PredictPage() {
             {/* Navigation and Submit Buttons */}
             <div className="flex justify-between items-center pt-2">
               <button
+                key="btn-prev"
                 type="button"
                 disabled={activeTab === 0}
-                onClick={() => setActiveTab(prev => Math.max(0, prev - 1))}
+                onClick={() => {
+                  setError('');
+                  setActiveTab(prev => Math.max(0, prev - 1));
+                }}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-300 disabled:opacity-40"
               >
                 Previous
@@ -347,14 +397,21 @@ export default function PredictPage() {
 
               {activeTab < tabs.length - 1 ? (
                 <button
+                  key="btn-next"
                   type="button"
-                  onClick={() => setActiveTab(prev => Math.min(tabs.length - 1, prev + 1))}
+                  onClick={() => {
+                    setError('');
+                    if (validateStep(activeTab)) {
+                      setActiveTab(prev => Math.min(tabs.length - 1, prev + 1));
+                    }
+                  }}
                   className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-900 dark:hover:bg-slate-800 text-sm font-semibold"
                 >
                   Next Section
                 </button>
               ) : (
                 <button
+                  key="btn-submit"
                   type="submit"
                   disabled={loading}
                   className="px-6 py-3 bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 text-white font-bold rounded-xl shadow hover:shadow-md transition-all active:scale-[0.98] flex items-center space-x-2 disabled:opacity-50"
