@@ -18,7 +18,12 @@ def test_health_check():
     """
     response = client.get("/api/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "1.0.0"}
+    data = response.json()
+    assert data["status"] in ["healthy", "degraded"]
+    assert "database" in data
+    assert "ml_model" in data
+    assert "explainer" in data
+    assert data["version"] == "1.0.0"
 
 def test_api_workflow():
     """

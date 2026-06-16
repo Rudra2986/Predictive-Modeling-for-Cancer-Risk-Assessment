@@ -1,5 +1,6 @@
 import os
 import joblib
+import logging
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -14,25 +15,81 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
 
+# Set up logging
+logger = logging.getLogger("backend.api.predict")
+
 # File paths for model artifacts
 MODEL_DIR = os.path.join("backend", "ml", "saved_models")
 MODEL_PATH = os.path.join(MODEL_DIR, "best_model.joblib")
 PREPROCESSOR_PATH = os.path.join(MODEL_DIR, "preprocessor.joblib")
 
-# Load ML artifacts globally on startup
-try:
-    if not os.path.exists(MODEL_PATH) or not os.path.exists(PREPROCESSOR_PATH):
-        raise FileNotFoundError("Model files do not exist. Please run training pipeline first.")
+# Global model references loaded at startup
+best_model = None
+preprocessor = None
+explainer = None
+
+# Guard to prevent infinite retraining loops per startup cycle
+_retrain_attempted = False
+
+def init_ml_models():
+    global best_model, preprocessor, explainer, _retrain_attempted
     
-    best_model = joblib.load(MODEL_PATH)
-    preprocessor = joblib.load(PREPROCESSOR_PATH)
-    explainer = OncoRiskExplainer()
-    print("REST API: Loaded machine learning model and preprocessor successfully.")
-except Exception as e:
-    print(f"REST API Warning: Model artifacts could not be loaded: {e}")
-    best_model = None
-    preprocessor = None
-    explainer = None
+    logger.info("Initializing ML models...")
+    retrain_needed = False
+    retrain_reason = ""
+    
+    # 1. Check if model files exist
+    if not os.path.exists(MODEL_PATH) or not os.path.exists(PREPROCESSOR_PATH):
+        retrain_needed = True
+        retrain_reason = "Model artifacts do not exist on disk."
+        logger.info(retrain_reason)
+    else:
+        # 2. Try to load existing model files
+        try:
+            best_model = joblib.load(MODEL_PATH)
+            preprocessor = joblib.load(PREPROCESSOR_PATH)
+            # Pass pre-loaded instances to explainer to avoid reloading
+            explainer = OncoRiskExplainer(model=best_model, preprocessor=preprocessor)
+            logger.info("REST API: Loaded machine learning model and preprocessor successfully.")
+        except Exception as e:
+            retrain_needed = True
+            retrain_reason = f"Model artifacts could not be loaded safely: {e}"
+            logger.warning(f"{retrain_reason}. Triggering automatic retraining...")
+            best_model = None
+            preprocessor = None
+            explainer = None
+
+    # 3. Automatically retrain if needed
+    if retrain_needed:
+        if _retrain_attempted:
+            logger.error("REST API Warning: Retraining was already attempted during this startup cycle. Aborting to prevent infinite loop.")
+            return
+            
+        _retrain_attempted = True
+        try:
+            logger.info("Starting automatic model retraining (using n_trials=5 for recovery)...")
+            from backend.ml.train import build_and_train
+            
+            # Run the training pipeline synchronously with reduced trials to speed up Render startup
+            build_and_train(n_trials=5)
+            
+            logger.info("Automatic model retraining completed. Reloading fresh artifacts...")
+            
+            # Reload fresh artifacts
+            best_model = joblib.load(MODEL_PATH)
+            preprocessor = joblib.load(PREPROCESSOR_PATH)
+            explainer = OncoRiskExplainer(model=best_model, preprocessor=preprocessor)
+            
+            logger.info(f"REST API: Fresh model and preprocessor loaded successfully from paths: {MODEL_PATH}, {PREPROCESSOR_PATH}")
+        except Exception as retrain_error:
+            logger.error(f"REST API Critical Error: Automatic model retraining failed: {retrain_error}", exc_info=True)
+            # Ensure the backend never crashes: keep them as None and let uvicorn startup continue
+            best_model = None
+            preprocessor = None
+            explainer = None
+
+# Trigger loading on module import
+init_ml_models()
 
 # Class index to label mapping
 IDX_TO_LABEL = {0: "Low", 1: "Medium", 2: "High"}
@@ -86,7 +143,7 @@ def predict_cancer_risk(
     if not best_model or not preprocessor or not explainer:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Machine learning prediction model is currently unavailable on the server."
+            detail="ML model is unavailable. Retraining may still be in progress."
         )
     
     # Extract features dict

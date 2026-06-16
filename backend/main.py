@@ -83,5 +83,30 @@ def read_root():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "version": settings.VERSION}
+    from sqlalchemy import text
+    from backend.database.session import SessionLocal
+
+    db_status = "connected"
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+    except Exception as e:
+        logger.error(f"Health check database connection test failed: {e}")
+        db_status = "disconnected"
+        
+    ml_model_status = "loaded" if predict.best_model is not None else "failed"
+    explainer_status = "loaded" if predict.explainer is not None else "failed"
+    
+    overall_status = "healthy"
+    if db_status == "disconnected" or ml_model_status == "failed" or explainer_status == "failed":
+        overall_status = "degraded"
+        
+    return {
+        "status": overall_status,
+        "database": db_status,
+        "ml_model": ml_model_status,
+        "explainer": explainer_status,
+        "version": settings.VERSION
+    }
 
