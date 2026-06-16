@@ -26,8 +26,4 @@ python-multipart==0.0.9
 shap==0.44.1
 
 # Database Migrations
-<<<<<<< HEAD
 alembic==1.13.1
-=======
-alembic==1.13.1
->>>>>>> 445805b (Improve README with production architecture and deployment documentation)
