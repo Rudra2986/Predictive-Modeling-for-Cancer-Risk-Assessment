@@ -8,6 +8,29 @@ import { api, getToken } from '@/utils/api';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import Link from 'next/link';
 
+const CustomPieTooltip = ({ active, payload, total }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const percentage = total > 0 ? ((data.value / total) * 100).toFixed(0) : 0;
+    
+    return (
+      <div className="bg-slate-900/95 text-white dark:bg-white/95 dark:text-slate-900 px-3 py-2.5 rounded-xl shadow-xl border border-slate-800 dark:border-slate-200 text-xs font-semibold space-y-1 select-none pointer-events-none z-50">
+        <div className="flex items-center space-x-1.5 font-bold">
+          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: data.color }} />
+          <span>{data.name}</span>
+        </div>
+        <div className="text-slate-300 dark:text-slate-600 font-medium">
+          <span>Count: </span>
+          <span className="font-extrabold text-white dark:text-slate-900">{data.value}</span>
+          <span className="mx-1.5">•</span>
+          <span className="font-extrabold text-brand-400 dark:text-brand-600">{percentage}%</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const router = useRouter();
   const [analytics, setAnalytics] = useState(null);
@@ -228,7 +251,9 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px', fontSize: '11px', color: '#fff' }}
+                    content={<CustomPieTooltip total={analytics.total_assessments} />}
+                    allowEscapeViewBox={{ x: true, y: true }}
+                    wrapperStyle={{ zIndex: 100 }}
                   />
                 </PieChart>
               </ResponsiveContainer>
