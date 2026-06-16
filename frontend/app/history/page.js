@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { History, Search, Filter, Eye, X, Loader, AlertCircle, Info, Calendar } from 'lucide-react';
-import { api, getToken } from '../../utils/api';
+import { api, getToken } from '@/utils/api';
 
 export default function HistoryPage() {
   const router = useRouter();

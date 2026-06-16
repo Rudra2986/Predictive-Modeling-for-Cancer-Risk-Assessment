@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Activity, Users, ShieldAlert, TrendingUp, AlertCircle, Loader, BarChart3, ChevronRight } from 'lucide-react';
-import { api, getToken } from '../../utils/api';
+import { api, getToken } from '@/utils/api';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import Link from 'next/link';
 

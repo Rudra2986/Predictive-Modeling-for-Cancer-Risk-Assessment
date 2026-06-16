@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Activity, AlertCircle, Loader, UserPlus } from 'lucide-react';
-import { api, setToken } from '../../utils/api';
+import { api, setToken } from '@/utils/api';
 
 export default function Register() {
   const router = useRouter();
@@ -37,10 +37,10 @@ export default function Register() {
 
     try {
       // 1. Call registration API
-      await api.post('/api/auth/register', { email, password });
+      await api.post('/auth/register', { email, password });
       
       // 2. Automatically log in after registration
-      const loginData = await api.post('/api/auth/login', { email, password });
+      const loginData = await api.post('/auth/login', { email, password });
       setToken(loginData.access_token);
       
       // Synchronize navbar auth state

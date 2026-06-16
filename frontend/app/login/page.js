@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Activity, AlertCircle, Loader } from 'lucide-react';
-import { api, setToken } from '../../utils/api';
+import { api, setToken } from '@/utils/api';
 
 export default function Login() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const data = await api.post('/api/auth/login', { email, password });
+      const data = await api.post('/auth/login', { email, password });
       setToken(data.access_token);
       // Synchronize navbar auth state
       window.dispatchEvent(new Event('auth-change'));

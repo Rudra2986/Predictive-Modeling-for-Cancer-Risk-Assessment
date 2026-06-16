@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Loader, AlertCircle, ArrowLeft, Heart, Sparkles, User, Dumbbell, ShieldAlert, Award } from 'lucide-react';
-import { api } from '../../utils/api';
+import { api } from '@/utils/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function PredictPage() {

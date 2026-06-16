@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Sun, Moon, Activity, LogOut, User, Menu, X, BarChart3, History, Shield } from 'lucide-react';
-import { getToken, setToken } from '../utils/api';
+import { getToken, setToken } from '@/utils/api';
 
 export default function Navbar() {
   const pathname = usePathname();
