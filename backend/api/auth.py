@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from datetime import datetime
 
 from backend.database.session import get_db
@@ -15,16 +15,27 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 # Pydantic validation schemas
 class UserCreateSchema(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=6, description="Plaintext password (min 6 characters)")
+    password: str = Field(..., min_length=8, description="Plaintext password (min 8 characters with complexity)")
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_complexity(cls, v: str) -> str:
+        if not any(char.isupper() for char in v):
+            raise ValueError("Password must contain at least one uppercase letter.")
+        if not any(char.islower() for char in v):
+            raise ValueError("Password must contain at least one lowercase letter.")
+        if not any(char.isdigit() for char in v):
+            raise ValueError("Password must contain at least one digit.")
+        return v
 
 class UserResponseSchema(BaseModel):
     id: int
     email: EmailStr
     is_active: bool
+    is_admin: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TokenSchema(BaseModel):
     access_token: str

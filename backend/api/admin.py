@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
-from backend.api.deps import get_current_user
+from backend.api.deps import get_current_admin_user
 from backend.models.user import User
 from backend.services.retrain_service import retrain_service
 from backend.ml.train import build_and_train
@@ -28,7 +28,7 @@ class RetrainRequestSchema(BaseModel):
 def trigger_retraining(
     background_tasks: BackgroundTasks,
     payload: Optional[RetrainRequestSchema] = None,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Trigger Optuna hyperparameter optimization and model retraining in the background.
@@ -45,7 +45,7 @@ def trigger_retraining(
     return {"message": "Model retraining successfully initiated in background thread."}
 
 @router.get("/retrain/status", response_model=RetrainStatusResponseSchema)
-def get_retraining_status(current_user: User = Depends(get_current_user)):
+def get_retraining_status(current_user: User = Depends(get_current_admin_user)):
     """
     Get live progress status, trials completed, and log streams for the retraining run.
     """

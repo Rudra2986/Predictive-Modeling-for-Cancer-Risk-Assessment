@@ -1,3 +1,10 @@
+import bcrypt
+# Monkeypatch bcrypt to prevent passlib from raising a trapped AttributeError on python-bcrypt >= 4.0.0
+if not hasattr(bcrypt, "__about__"):
+    class BcryptAbout:
+        __version__ = getattr(bcrypt, "__version__", "4.0.0")
+    bcrypt.__about__ = BcryptAbout()
+
 import jwt
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union
