@@ -11,17 +11,19 @@ psycopg2-binary==2.9.9
 
 # Security & Authentication
 passlib[bcrypt]==1.7.4
-bcrypt==4.1.2
+bcrypt==4.0.1
 pyjwt==2.8.0
 
 # Machine Learning & Data Processing
 pandas==2.2.2
-numpy==1.26.4
+numpy==1.24.4
 scikit-learn==1.5.0
 xgboost==2.0.3
 imbalanced-learn==0.12.3
 optuna==3.6.1
 joblib==1.4.2
 python-multipart==0.0.9
-shap==0.51.0
+shap==0.44.1
+
+# Database Migrations
 alembic==1.13.1
