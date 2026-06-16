@@ -37,10 +37,10 @@ export default function Register() {
 
     try {
       // 1. Call registration API
-      await api.post('/auth/register', { email, password });
+      await api.post('/api/auth/register', { email, password });
       
       // 2. Automatically log in after registration
-      const loginData = await api.post('/auth/login', { email, password });
+      const loginData = await api.post('/api/auth/login', { email, password });
       setToken(loginData.access_token);
       
       // Synchronize navbar auth state
