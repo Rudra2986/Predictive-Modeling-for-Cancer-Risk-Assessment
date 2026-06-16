@@ -13,16 +13,25 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     
     # CORS Origins (comma separated in .env file)
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    BACKEND_CORS_ORIGINS: Any = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: Any) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            v_clean = v.strip()
+            if v_clean.startswith("[") and v_clean.endswith("]"):
+                try:
+                    import json
+                    parsed = json.loads(v_clean)
+                    if isinstance(parsed, list):
+                        return [str(i).strip() for i in parsed]
+                except Exception:
+                    pass
+            return [i.strip() for i in v_clean.split(",") if i.strip()]
+        elif isinstance(v, list):
+            return [str(i).strip() for i in v]
+        raise ValueError(f"Invalid CORS origins format: {v}")
 
     @field_validator("BACKEND_CORS_ORIGINS")
     @classmethod
