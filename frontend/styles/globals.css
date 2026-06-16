@@ -8,12 +8,8 @@
   }
   
   body {
-    @apply bg-slate-50/50 text-slate-800 antialiased transition-colors duration-300;
+    @apply bg-slate-50/50 text-slate-800 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
     font-family: var(--font-inter), sans-serif;
-  }
-  
-  body.dark {
-    @apply bg-slate-950 text-slate-100;
   }
 
   h1, h2, h3, h4, h5, h6 {

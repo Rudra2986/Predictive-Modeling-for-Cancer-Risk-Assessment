@@ -93,7 +93,7 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex items-center space-x-2 text-sm text-red-650 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-4 rounded-xl border border-red-200/50 dark:border-red-900/30 max-w-xl mx-auto mt-10">
+      <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-4 rounded-xl border border-red-200/50 dark:border-red-900/30 max-w-xl mx-auto mt-10">
         <AlertCircle className="h-5 w-5 flex-shrink-0" />
         <span>{error}</span>
       </div>
@@ -144,7 +144,7 @@ export default function Dashboard() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Assessments</span>
             <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white">{analytics.total_assessments}</h2>
           </div>
-          <div className="p-3 bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-450 rounded-2xl">
+          <div className="p-3 bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-500 rounded-2xl">
             <Users className="h-6 w-6" />
           </div>
         </div>
@@ -152,9 +152,9 @@ export default function Dashboard() {
         <div className="glass-card p-6 flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">High Risk Alerts</span>
-            <h2 className="text-3xl font-extrabold text-red-550 dark:text-red-400">{analytics.risk_distribution?.High || 0}</h2>
+            <h2 className="text-3xl font-extrabold text-red-600 dark:text-red-400">{analytics.risk_distribution?.High || 0}</h2>
           </div>
-          <div className="p-3 bg-red-50 dark:bg-red-950/10 text-red-550 dark:text-red-400 rounded-2xl">
+          <div className="p-3 bg-red-50 dark:bg-red-950/10 text-red-600 dark:text-red-400 rounded-2xl">
             <ShieldAlert className="h-6 w-6" />
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function Dashboard() {
               {trendData.reduce((acc, curr) => acc + curr.Assessments, 0)}
             </h2>
           </div>
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-450 rounded-2xl">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-2xl">
             <TrendingUp className="h-6 w-6" />
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function Dashboard() {
         <div className="glass-card p-6 lg:col-span-8 space-y-4">
           <div>
             <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">Assessment Load Trends</h3>
-            <p className="text-xs text-slate-450 mt-0.5">Frequency volume of assessments queried over the last 7 days</p>
+            <p className="text-xs text-slate-400 mt-0.5">Frequency volume of assessments queried over the last 7 days</p>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -189,7 +189,7 @@ export default function Dashboard() {
                     <stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-850" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                 <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip 
@@ -205,7 +205,7 @@ export default function Dashboard() {
         <div className="glass-card p-6 lg:col-span-4 space-y-4 flex flex-col justify-between">
           <div>
             <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">Risk Profile Split</h3>
-            <p className="text-xs text-slate-450 mt-0.5">Aggregate user records sliced by output classification</p>
+            <p className="text-xs text-slate-400 mt-0.5">Aggregate user records sliced by output classification</p>
           </div>
           
           <div className="h-44 w-full relative flex items-center justify-center">
@@ -264,20 +264,20 @@ export default function Dashboard() {
       <div className="glass-card p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/50 dark:border-slate-800/80 pb-4">
           <div>
-            <h3 className="text-base font-bold text-slate-700 dark:text-slate-350 flex items-center space-x-2">
+            <h3 className="text-base font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-2">
               <Activity className="h-5 w-5 text-brand-600 dark:text-brand-500 animate-pulse" />
               <span>OncoRisk ML Engine Administration</span>
             </h3>
-            <p className="text-xs text-slate-450 mt-0.5">Retrain models and run hyperparameter tuning with Optuna optimization</p>
+            <p className="text-xs text-slate-400 mt-0.5">Retrain models and run hyperparameter tuning with Optuna optimization</p>
           </div>
           <div className="flex items-center space-x-3 self-start sm:self-auto">
             <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl">
-              <label className="text-[10px] uppercase font-bold text-slate-450 whitespace-nowrap">Trials / Model:</label>
+              <label className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Trials / Model:</label>
               <input
                 type="number"
                 min="5"
                 max="100"
-                className="w-10 text-xs font-bold text-center bg-transparent border-none focus:outline-none text-slate-850 dark:text-slate-200"
+                className="w-10 text-xs font-bold text-center bg-transparent border-none focus:outline-none text-slate-800 dark:text-slate-200"
                 value={trialsPerModel}
                 onChange={(e) => setTrialsPerModel(Math.max(5, Math.min(100, parseInt(e.target.value) || 5)))}
                 disabled={polling || (retrainStatus && retrainStatus.is_training)}
@@ -305,28 +305,28 @@ export default function Dashboard() {
             <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
-                  <span className="text-slate-450 font-medium">Status:</span>
-                  <span className={`font-bold ${retrainStatus.is_training ? 'text-brand-650 dark:text-brand-400 animate-pulse' : 'text-emerald-500'}`}>
+                  <span className="text-slate-400 font-medium">Status:</span>
+                  <span className={`font-bold ${retrainStatus.is_training ? 'text-brand-600 dark:text-brand-400 animate-pulse' : 'text-emerald-500'}`}>
                     {retrainStatus.is_training ? `Training - ${retrainStatus.current_step}` : 'Successfully Completed'}
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
-                  <span className="text-slate-450 font-medium">Study Trials:</span>
+                  <span className="text-slate-400 font-medium">Study Trials:</span>
                   <span className="font-bold text-slate-700 dark:text-slate-200">
                     {retrainStatus.current_trial} / {retrainStatus.total_trials} (Optuna Search)
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
-                  <span className="text-slate-450 font-medium">Best Random Forest F1:</span>
+                  <span className="text-slate-400 font-medium">Best Random Forest F1:</span>
                   <span className="font-bold text-slate-700 dark:text-slate-200">
                     {retrainStatus.best_rf_f1 > 0 ? retrainStatus.best_rf_f1.toFixed(4) : "Pending"}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-900 pb-2 text-xs">
-                  <span className="text-slate-450 font-medium">Best XGBoost F1:</span>
+                  <span className="text-slate-400 font-medium">Best XGBoost F1:</span>
                   <span className="font-bold text-slate-700 dark:text-slate-200">
                     {retrainStatus.best_xgb_f1 > 0 ? retrainStatus.best_xgb_f1.toFixed(4) : "Pending"}
                   </span>
@@ -349,14 +349,14 @@ export default function Dashboard() {
               <div className="relative flex flex-col flex-1 p-4 bg-slate-950 border border-slate-900 rounded-2xl w-full h-56 font-mono text-[10px] leading-relaxed shadow-inner select-none text-slate-400 overflow-y-auto overflow-x-hidden">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-900 mb-2 text-slate-500 text-[9px] uppercase tracking-wider">
                   <span>Optuna Trials Console Log</span>
-                  {retrainStatus.is_training && <span className="h-2 w-2 rounded-full bg-brand-650 dark:bg-brand-400 animate-ping" />}
+                  {retrainStatus.is_training && <span className="h-2 w-2 rounded-full bg-brand-600 dark:bg-brand-400 animate-ping" />}
                 </div>
                 <div className="space-y-1">
                   {retrainStatus.logs?.length === 0 ? (
-                    <p className="text-slate-650">Console idle. Awaiting command execution...</p>
+                    <p className="text-slate-400">Console idle. Awaiting command execution...</p>
                   ) : (
                     retrainStatus.logs?.slice(-100).map((log, i) => (
-                      <p key={i} className={log.includes("ERROR") ? "text-red-400" : log.includes("Winner") || log.includes("completed") ? "text-emerald-400" : "text-slate-350"}>
+                      <p key={i} className={log.includes("ERROR") ? "text-red-400" : log.includes("Winner") || log.includes("completed") ? "text-emerald-400" : "text-slate-300"}>
                         {log}
                       </p>
                     ))
@@ -373,7 +373,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">Recent Assessments</h3>
-            <p className="text-xs text-slate-450 mt-0.5">Top 10 recently processed patient risk profiles</p>
+            <p className="text-xs text-slate-400 mt-0.5">Top 10 recently processed patient risk profiles</p>
           </div>
           <Link href="/history" className="text-xs font-bold text-brand-600 dark:text-brand-500 flex items-center space-x-0.5 hover:underline">
             <span>View Audit Logs</span>
@@ -396,19 +396,19 @@ export default function Dashboard() {
             <tbody className="divide-y divide-slate-200/40 dark:divide-slate-900/80 text-slate-600 dark:text-slate-300">
               {analytics.recent_runs?.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-slate-450">No patient assessments run yet.</td>
+                  <td colSpan={6} className="px-4 py-6 text-center text-slate-400">No patient assessments run yet.</td>
                 </tr>
               ) : (
                 analytics.recent_runs?.map((run) => (
                   <tr key={run.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
-                    <td className="px-4 py-3 font-semibold text-xs text-slate-450">#LOG-{run.id}</td>
+                    <td className="px-4 py-3 font-semibold text-xs text-slate-500">#LOG-{run.id}</td>
                     <td className="px-4 py-3 font-medium">{run.cancer_type}</td>
                     <td className="px-4 py-3">{run.age || 'N/A'}</td>
                     <td className="px-4 py-3">
                       <span className={getRiskBadgeClass(run.risk_level)}>{run.risk_level}</span>
                     </td>
                     <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">{(run.confidence * 100).toFixed(0)}%</td>
-                    <td className="px-4 py-3 text-xs text-slate-450">
+                    <td className="px-4 py-3 text-xs text-slate-500">
                       {new Date(run.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </td>
                   </tr>

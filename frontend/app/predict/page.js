@@ -120,7 +120,7 @@ export default function PredictPage() {
         {result && (
           <button 
             onClick={() => setResult(null)} 
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-slate-200/60 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-350 transition-all"
+            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-slate-200/60 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>New Patient</span>
@@ -129,7 +129,7 @@ export default function PredictPage() {
       </div>
 
       {error && (
-        <div className="flex items-center space-x-2 text-sm text-red-650 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-4 rounded-xl border border-red-200/50 dark:border-red-900/30">
+        <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-4 rounded-xl border border-red-200/50 dark:border-red-900/30">
           <AlertCircle className="h-5 w-5 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -158,7 +158,7 @@ export default function PredictPage() {
                     onClick={() => setActiveTab(idx)}
                     className={`flex items-center space-x-1.5 px-4 py-3 border-b-2 font-medium text-sm transition-all whitespace-nowrap ${
                       isSelected
-                        ? 'border-brand-600 text-brand-650 dark:border-brand-500 dark:text-brand-400'
+                        ? 'border-brand-600 text-brand-700 dark:text-brand-400 dark:border-brand-500'
                         : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                     }`}
                   >
@@ -214,7 +214,7 @@ export default function PredictPage() {
                           onClick={() => handleInputChange('Gender', g.val)}
                           className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                             formData.Gender === g.val
-                              ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-650 dark:text-brand-400 font-bold'
+                              ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
                               : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400'
                           }`}
                         >
@@ -294,7 +294,7 @@ export default function PredictPage() {
                               onClick={() => handleInputChange(item.field, opt.val)}
                               className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
                                 formData[item.field] === opt.val
-                                  ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-650 dark:text-brand-400 font-bold'
+                                  ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
                                   : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400'
                               }`}
                             >
@@ -340,7 +340,7 @@ export default function PredictPage() {
                 type="button"
                 disabled={activeTab === 0}
                 onClick={() => setActiveTab(prev => Math.max(0, prev - 1))}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-350 disabled:opacity-40"
+                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-300 disabled:opacity-40"
               >
                 Previous
               </button>
@@ -423,7 +423,7 @@ export default function PredictPage() {
                       </svg>
                       <div className="absolute flex flex-col items-center">
                         <span className="text-3xl font-extrabold text-slate-800 dark:text-white">{(score * 100).toFixed(0)}%</span>
-                        <span className="text-[10px] font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Confidence</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Confidence</span>
                       </div>
                     </div>
                   );
@@ -432,7 +432,7 @@ export default function PredictPage() {
 
               {/* Explainer Narrative Card */}
               <div className="glass-card p-6 space-y-4">
-                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350 flex items-center space-x-1.5">
+                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
                   <Sparkles className="h-4.5 w-4.5 text-brand-600 dark:text-brand-500" />
                   <span>Clinical Narrative</span>
                 </h3>
@@ -445,8 +445,8 @@ export default function PredictPage() {
             <div className="lg:col-span-7 space-y-6">
               <div className="glass-card p-6 space-y-4 flex flex-col h-full justify-between">
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350 flex items-center space-x-1.5">
-                    <Award className="h-5 w-5 text-brand-655" />
+                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+                    <Award className="h-5 w-5 text-brand-600 dark:text-brand-500" />
                     <span>Clinical SHAP Explainability</span>
                   </h3>
                   <p className="text-xs text-slate-400">Relative risk impact (positive values drive risk up, negative values drive risk down)</p>

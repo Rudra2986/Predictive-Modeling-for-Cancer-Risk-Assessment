@@ -78,7 +78,7 @@ export default function Home() {
           </Link>
           <Link
             href="/register"
-            className="w-full sm:w-auto px-6 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-200 rounded-xl font-bold shadow-sm transition-all"
+            className="w-full sm:w-auto px-6 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl font-bold shadow-sm transition-all"
           >
             Register Account
           </Link>
@@ -140,7 +140,7 @@ export default function Home() {
                 "Restricted Access CORS Policy",
                 "Signed JWT Session Verification Tokens"
               ].map((text, i) => (
-                <li key={i} className="flex items-center space-x-2 text-slate-600 dark:text-slate-350">
+                <li key={i} className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
                   <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 flex-shrink-0" />
                   <span>{text}</span>
                 </li>

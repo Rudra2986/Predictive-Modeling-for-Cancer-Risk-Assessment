@@ -35,21 +35,38 @@ def test_api_workflow():
         db.commit()
         
     try:
-        # 2. Test user registration
+        # 2a. Test user registration with simple/invalid password
+        invalid_register_payload = {
+            "email": test_email,
+            "password": "short"
+        }
+        resp = client.post("/api/auth/register", json=invalid_register_payload)
+        assert resp.status_code == 422
+        
+        # 2b. Test user registration with password missing uppercase
+        invalid_register_payload_2 = {
+            "email": test_email,
+            "password": "validlengthbutnouror123!"
+        }
+        resp = client.post("/api/auth/register", json=invalid_register_payload_2)
+        assert resp.status_code == 422
+        
+        # 2c. Test user registration with compliant password
         register_payload = {
             "email": test_email,
-            "password": "integration_test_password"
+            "password": "IntegrationTestPassword123!"
         }
         resp = client.post("/api/auth/register", json=register_payload)
         assert resp.status_code == 201
         user_data = resp.json()
         assert user_data["email"] == test_email
         assert "id" in user_data
+        assert user_data["is_admin"] is False
         
         # 3. Test user login
         login_payload = {
             "email": test_email,
-            "password": "integration_test_password"
+            "password": "IntegrationTestPassword123!"
         }
         resp = client.post("/api/auth/login", json=login_payload)
         assert resp.status_code == 200
@@ -62,6 +79,7 @@ def test_api_workflow():
         resp = client.get("/api/auth/me", headers=headers)
         assert resp.status_code == 200
         assert resp.json()["email"] == test_email
+        assert resp.json()["is_admin"] is False
         
         # 5. Test model prediction as guest
         prediction_payload = {
@@ -116,7 +134,20 @@ def test_api_workflow():
         assert "trends" in analytics
         assert len(analytics["recent_runs"]) >= 1
         
-        # 9. Test admin retrain status retrieval
+        # 9a. Test admin retrain status retrieval as non-admin user (should fail 403)
+        resp = client.get("/api/admin/retrain/status", headers=headers)
+        assert resp.status_code == 403
+        
+        # 9b. Test triggering admin retraining as non-admin user (should fail 403)
+        resp = client.post("/api/admin/retrain", headers=headers)
+        assert resp.status_code == 403
+        
+        # 10. Promote test user to administrator in the database
+        db_user = db.query(User).filter(User.email == test_email).first()
+        db_user.is_admin = True
+        db.commit()
+        
+        # 11a. Test admin retrain status retrieval as administrator (should succeed 200)
         resp = client.get("/api/admin/retrain/status", headers=headers)
         assert resp.status_code == 200
         status_data = resp.json()
@@ -124,7 +155,7 @@ def test_api_workflow():
         assert "logs" in status_data
         assert isinstance(status_data["logs"], list)
         
-        # 10. Test triggering admin retraining
+        # 11b. Test triggering admin retraining as administrator (should succeed 202 or 409)
         resp = client.post("/api/admin/retrain", headers=headers)
         assert resp.status_code in [202, 409]
         

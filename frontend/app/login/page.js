@@ -42,16 +42,16 @@ export default function Login() {
       >
         {/* Branding header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex p-3 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-650 mb-1">
+          <div className="inline-flex p-3 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 mb-1">
             <Activity className="h-8 w-8" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-800 dark:text-white">Welcome Back</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-450">Sign in to access patient diagnostics & audits</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Sign in to access patient diagnostics & audits</p>
         </div>
 
         {/* Error Banner */}
         {error && (
-          <div className="flex items-center space-x-2 text-sm text-red-650 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-3.5 rounded-xl border border-red-200/50 dark:border-red-900/30">
+          <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-3.5 rounded-xl border border-red-200/50 dark:border-red-900/30">
             <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -111,7 +111,7 @@ export default function Login() {
 
         <div className="text-center pt-2 text-sm text-slate-500 dark:text-slate-400">
           <span>Don't have a practitioner account? </span>
-          <Link href="/register" className="font-bold text-brand-650 hover:text-brand-700 transition-colors">
+          <Link href="/register" className="font-bold text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors">
             Sign Up
           </Link>
         </div>

@@ -20,8 +20,12 @@ export default function Register() {
     setError('');
 
     // Client-side validations
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, and one digit.');
       return;
     }
     if (password !== confirmPassword) {
@@ -59,16 +63,16 @@ export default function Register() {
       >
         {/* Branding header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex p-3 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-650 mb-1">
+          <div className="inline-flex p-3 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 mb-1">
             <UserPlus className="h-8 w-8" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-800 dark:text-white">Create Account</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-455">Register a clinician account to audit patient runs</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Register a clinician account to audit patient runs</p>
         </div>
 
         {/* Error Banner */}
         {error && (
-          <div className="flex items-center space-x-2 text-sm text-red-650 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-3.5 rounded-xl border border-red-200/50 dark:border-red-900/30">
+          <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-3.5 rounded-xl border border-red-200/50 dark:border-red-900/30">
             <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -103,7 +107,7 @@ export default function Register() {
                 type="password"
                 required
                 className="clinical-input pl-10"
-                placeholder="Min 6 characters"
+                placeholder="Min 8 characters (A-Z, a-z, 0-9)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -145,7 +149,7 @@ export default function Register() {
 
         <div className="text-center pt-2 text-sm text-slate-500 dark:text-slate-400">
           <span>Already have an account? </span>
-          <Link href="/login" className="font-bold text-brand-650 hover:text-brand-700 transition-colors">
+          <Link href="/login" className="font-bold text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors">
             Sign In
           </Link>
         </div>

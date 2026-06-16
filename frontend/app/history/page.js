@@ -76,7 +76,7 @@ export default function HistoryPage() {
 
   if (error) {
     return (
-      <div className="flex items-center space-x-2 text-sm text-red-650 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-4 rounded-xl border border-red-200/50 dark:border-red-900/30 max-w-xl mx-auto mt-10">
+      <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400 p-4 rounded-xl border border-red-200/50 dark:border-red-900/30 max-w-xl mx-auto mt-10">
         <AlertCircle className="h-5 w-5 flex-shrink-0" />
         <span>{error}</span>
       </div>
@@ -143,7 +143,7 @@ export default function HistoryPage() {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200/40 dark:divide-slate-900/80 text-slate-600 dark:text-slate-350">
+            <tbody className="divide-y divide-slate-200/40 dark:divide-slate-900/80 text-slate-600 dark:text-slate-300">
               {filteredHistory.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-slate-400 font-medium">
@@ -153,8 +153,8 @@ export default function HistoryPage() {
               ) : (
                 filteredHistory.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
-                    <td className="px-5 py-4 font-semibold text-xs text-slate-450">#LOG-{item.id}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-800 dark:text-slate-250">
+                    <td className="px-5 py-4 font-semibold text-xs text-slate-500">#LOG-{item.id}</td>
+                    <td className="px-5 py-4 font-semibold text-slate-800 dark:text-slate-200">
                       {item.patient_data?.Cancer_Type || 'Unknown'}
                     </td>
                     <td className="px-5 py-4 text-xs">
@@ -168,13 +168,13 @@ export default function HistoryPage() {
                     <td className="px-5 py-4 font-bold text-slate-800 dark:text-slate-200">
                       {(item.confidence_score * 100).toFixed(0)}%
                     </td>
-                    <td className="px-5 py-4 text-xs text-slate-450">
+                    <td className="px-5 py-4 text-xs text-slate-500">
                       {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td className="px-5 py-4 text-right">
                       <button
                         onClick={() => setSelectedItem(item)}
-                        className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800 hover:bg-brand-50 dark:hover:bg-brand-950/20 hover:text-brand-650 dark:hover:text-brand-400 text-xs font-semibold text-slate-500 dark:text-slate-400 transition-all"
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800 hover:bg-brand-50 dark:hover:bg-brand-950/20 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-semibold text-slate-500 dark:text-slate-400 transition-all"
                       >
                         <Eye className="h-3.5 w-3.5" />
                         <span>Inspect</span>
