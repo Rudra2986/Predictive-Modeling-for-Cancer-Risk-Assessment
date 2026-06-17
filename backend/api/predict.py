@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
 
 from backend.database.session import get_db
@@ -114,6 +114,18 @@ class PatientPredictionInput(BaseModel):
     BMI: float = Field(..., ge=10.0, le=60.0, description="Body Mass Index (BMI)")
     Physical_Activity_Level: int = Field(..., ge=0, le=10, description="Active exercise level index (0-10)")
     Cancer_Type: Optional[str] = Field("Unknown", description="Type of cancer under analysis (e.g. Breast, Colon, Lung)")
+
+    @model_validator(mode='after')
+    def validate_gender_cancer_type(self) -> 'PatientPredictionInput':
+        gender = self.Gender
+        cancer_type = self.Cancer_Type
+        if gender == 1: # Male
+            if cancer_type in ["Breast", "Cervical", "Ovarian", "Endometrial"]:
+                raise ValueError(f"Incompatible combination: Male gender cannot be associated with {cancer_type} cancer.")
+        elif gender == 0: # Female
+            if cancer_type in ["Prostate", "Testicular"]:
+                raise ValueError(f"Incompatible combination: Female gender cannot be associated with {cancer_type} cancer.")
+        return self
 
 # Output response schemas
 class ContributingFactorSchema(BaseModel):

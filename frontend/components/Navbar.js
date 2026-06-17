@@ -13,6 +13,7 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userLabel, setUserLabel] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Sync login state
@@ -23,11 +24,14 @@ export default function Navbar() {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           setUserLabel(payload.sub ? `ID: ${payload.sub}` : 'Clinician');
+          setIsAdmin(!!payload.is_admin);
         } catch (_) {
           setUserLabel('Clinician');
+          setIsAdmin(false);
         }
       } else {
         setUserLabel('');
+        setIsAdmin(false);
       }
     };
 
@@ -65,7 +69,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Run Assessment', href: '/predict', icon: Activity },
     ...(isAuthenticated ? [
-      { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+      ...(isAdmin ? [{ name: 'Dashboard', href: '/dashboard', icon: BarChart3 }] : []),
       { name: 'History', href: '/history', icon: History }
     ] : [])
   ];

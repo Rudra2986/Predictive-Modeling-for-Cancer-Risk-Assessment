@@ -6,7 +6,7 @@ from datetime import datetime
 
 from backend.database.session import get_db
 from backend.services import prediction_service
-from backend.api.deps import get_current_user
+from backend.api.deps import get_current_user, get_current_admin_user
 from backend.models.user import User
 
 router = APIRouter(prefix="/predictions", tags=["history & analytics"])
@@ -55,7 +55,7 @@ def get_history(
 @router.get("/analytics", response_model=AnalyticsResponseSchema)
 def get_analytics(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Fetch numerical aggregate data and query trends for the user's dashboard widgets.

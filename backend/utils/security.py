@@ -29,7 +29,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     return pwd_context.verify(plain_password, hashed_password)
 
-def create_access_token(subject: Union[str, Any], expires_delta: timedelta = None) -> str:
+def create_access_token(subject: Union[str, Any], is_admin: bool = False, expires_delta: timedelta = None) -> str:
     """
     Generates a JWT access token representing user subject (email or ID).
     """
@@ -40,7 +40,8 @@ def create_access_token(subject: Union[str, Any], expires_delta: timedelta = Non
         
     to_encode = {
         "exp": expire,
-        "sub": str(subject)
+        "sub": str(subject),
+        "is_admin": is_admin
     }
     
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)

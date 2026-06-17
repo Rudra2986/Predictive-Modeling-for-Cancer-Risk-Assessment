@@ -7,10 +7,13 @@ import { api } from '@/utils/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function PredictPage() {
+  const femaleCancers = ["Breast", "Cervical", "Ovarian", "Endometrial", "Lung", "Colon", "Skin", "Liver", "Pancreatic"];
+  const maleCancers = ["Prostate", "Testicular", "Lung", "Colon", "Skin", "Liver", "Pancreatic"];
+
   // 1. Inputs state mapping the PatientPredictionInput schema
   const [formData, setFormData] = useState({
     Age: 55,
-    Gender: 1,
+    Gender: "", // unselected
     Smoking: 5,
     Alcohol_Use: 5,
     Obesity: 5,
@@ -26,8 +29,19 @@ export default function PredictPage() {
     Calcium_Intake: 5,
     BMI: 24.5,
     Physical_Activity_Level: 5,
-    Cancer_Type: "Breast"
+    Cancer_Type: "" // unselected
   });
+
+  const handleGenderChange = (newGender) => {
+    setFormData(prev => {
+      const updated = { ...prev, Gender: newGender };
+      const validCancers = newGender === 1 ? maleCancers : femaleCancers;
+      if (!validCancers.includes(prev.Cancer_Type)) {
+        updated.Cancer_Type = "";
+      }
+      return updated;
+    });
+  };
 
   const [activeTab, setActiveTab] = useState(0); // 0: Demographics, 1: Lifestyle & Diet, 2: Medical & Environmental
   const [result, setResult] = useState(null);
@@ -43,6 +57,10 @@ export default function PredictPage() {
 
   const validateStep = (step) => {
     if (step === 0) {
+      if (formData.Gender === "" || formData.Gender === null || formData.Gender === undefined) {
+        setError("Please select Patient Gender.");
+        return false;
+      }
       if (!formData.Cancer_Type) {
         setError("Please select a suspected Cancer Type.");
         return false;
@@ -220,15 +238,46 @@ export default function PredictPage() {
               {activeTab === 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Patient Gender</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: "Female", val: 0 },
+                        { label: "Male", val: 1 }
+                      ].map(g => (
+                        <button
+                          key={g.val}
+                          type="button"
+                          onClick={() => handleGenderChange(g.val)}
+                          className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                            formData.Gender === g.val
+                              ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
+                              : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400'
+                          }`}
+                        >
+                          {g.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Suspected Cancer Type</label>
                     <select
                       className="clinical-input"
                       value={formData.Cancer_Type}
                       onChange={(e) => handleInputChange('Cancer_Type', e.target.value)}
+                      disabled={formData.Gender === ""}
                     >
-                      {["Breast", "Prostate", "Lung", "Colon", "Skin"].map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
+                      {formData.Gender === "" ? (
+                        <option value="">Please select gender first</option>
+                      ) : (
+                        <>
+                          <option value="">-- Select Cancer Type --</option>
+                          {(formData.Gender === 1 ? maleCancers : femaleCancers).map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </>
+                      )}
                     </select>
                   </div>
 
@@ -244,29 +293,6 @@ export default function PredictPage() {
                         onChange={(e) => handleInputChange('Age', e.target.value)}
                       />
                       <span className="w-12 text-center text-sm font-bold bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-800">{formData.Age}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Patient Gender</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { label: "Female", val: 0 },
-                        { label: "Male", val: 1 }
-                      ].map(g => (
-                        <button
-                          key={g.val}
-                          type="button"
-                          onClick={() => handleInputChange('Gender', g.val)}
-                          className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                            formData.Gender === g.val
-                              ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
-                              : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400'
-                          }`}
-                        >
-                          {g.label}
-                        </button>
-                      ))}
                     </div>
                   </div>
 

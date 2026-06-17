@@ -51,6 +51,18 @@ export default function Dashboard() {
         return;
       }
 
+      // Check if user has admin privileges
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (!payload.is_admin) {
+          router.push('/predict');
+          return;
+        }
+      } catch (_) {
+        router.push('/login');
+        return;
+      }
+
       try {
         const data = await api.get('/predictions/analytics');
         setAnalytics(data);

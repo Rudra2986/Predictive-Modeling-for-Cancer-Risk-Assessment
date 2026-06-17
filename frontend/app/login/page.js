@@ -24,7 +24,16 @@ export default function Login() {
       setToken(data.access_token);
       // Synchronize navbar auth state
       window.dispatchEvent(new Event('auth-change'));
-      router.push('/dashboard');
+      try {
+        const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+        if (payload.is_admin) {
+          router.push('/dashboard');
+        } else {
+          router.push('/predict');
+        }
+      } catch (_) {
+        router.push('/predict');
+      }
     } catch (err) {
       setError(err.message || 'Authentication failed. Please verify your credentials.');
     } finally {

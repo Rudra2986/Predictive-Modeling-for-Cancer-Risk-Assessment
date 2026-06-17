@@ -71,7 +71,7 @@ def login_json(login_in: LoginSchema, db: Session = Depends(get_db)):
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = security.create_access_token(subject=str(user.id))
+    access_token = security.create_access_token(subject=str(user.id), is_admin=user.is_admin)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login/form", response_model=TokenSchema, include_in_schema=False)
@@ -86,7 +86,7 @@ def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = security.create_access_token(subject=str(user.id))
+    access_token = security.create_access_token(subject=str(user.id), is_admin=user.is_admin)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UserResponseSchema)

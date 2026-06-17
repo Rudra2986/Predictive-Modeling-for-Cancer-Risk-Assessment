@@ -130,14 +130,9 @@ def test_api_workflow():
         assert len(history) >= 1
         assert history[0]["patient_data"]["Age"] == 55
         
-        # 8. Test analytics query
+        # 8. Test analytics query as non-admin (should fail 403)
         resp = client.get("/api/predictions/analytics", headers=headers)
-        assert resp.status_code == 200
-        analytics = resp.json()
-        assert analytics["total_assessments"] >= 1
-        assert "risk_distribution" in analytics
-        assert "trends" in analytics
-        assert len(analytics["recent_runs"]) >= 1
+        assert resp.status_code == 403
         
         # 9a. Test admin retrain status retrieval as non-admin user (should fail 403)
         resp = client.get("/api/admin/retrain/status", headers=headers)
@@ -159,10 +154,36 @@ def test_api_workflow():
         assert "is_training" in status_data
         assert "logs" in status_data
         assert isinstance(status_data["logs"], list)
-        
-        # 11b. Test triggering admin retraining as administrator (should succeed 202 or 409)
+
+        # 11b. Test analytics query as administrator (should succeed 200)
+        resp = client.get("/api/predictions/analytics", headers=headers)
+        assert resp.status_code == 200
+        analytics = resp.json()
+        assert analytics["total_assessments"] >= 1
+        assert "risk_distribution" in analytics
+        assert "trends" in analytics
+        assert len(analytics["recent_runs"]) >= 1
+
+        # 11c. Test triggering admin retraining as administrator (should succeed 202 or 409)
         resp = client.post("/api/admin/retrain", headers=headers)
         assert resp.status_code in [202, 409]
+
+        # 12. Test incompatible gender/cancer combinations (should fail 422)
+        incompatible_payload_male_breast = {
+            **prediction_payload,
+            "Gender": 1,
+            "Cancer_Type": "Breast"
+        }
+        resp = client.post("/api/predict", json=incompatible_payload_male_breast)
+        assert resp.status_code == 422
+
+        incompatible_payload_female_prostate = {
+            **prediction_payload,
+            "Gender": 0,
+            "Cancer_Type": "Prostate"
+        }
+        resp = client.post("/api/predict", json=incompatible_payload_female_prostate)
+        assert resp.status_code == 422
         
     finally:
         # Cleanup test entries
