@@ -179,7 +179,7 @@ export default function Dashboard() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Assessments</span>
             <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white">{analytics.total_assessments}</h2>
           </div>
-          <div className="p-3 bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-500 rounded-2xl">
+          <div className="p-3 bg-brand-50 dark:bg-brand-500/15 text-brand-600 dark:text-brand-500 rounded-2xl">
             <Users className="h-6 w-6" />
           </div>
         </div>

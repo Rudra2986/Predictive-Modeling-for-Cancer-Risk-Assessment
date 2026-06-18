@@ -23,25 +23,25 @@ export default function Home() {
       title: "Optimized ML Engine",
       desc: "XGBoost and Random Forest classifiers fine-tuned using Optuna, resolving class imbalance with SMOTE for high-precision patient classification.",
       icon: BrainCircuit,
-      color: "text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/30"
+      color: "text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10"
     },
     {
       title: "Clinical Explainability",
       desc: "Mathematical feature importances translated by a custom rule engine into clear plain-English diagnostic narratives and contribution score charts.",
       icon: Sparkles,
-      color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30"
+      color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10"
     },
     {
       title: "Auditable Data Persistence",
       desc: "Decoupled PostgreSQL persistent database storage mapping history logs, recent assessment runs, and aggregated time-series query counts.",
       icon: Database,
-      color: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30"
+      color: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10"
     },
     {
       title: "Rigorous Security Protocols",
       desc: "Defended against SQL Injections using parameterized query binding, secure bcrypt hashing contexts, and signed JWT authentication sessions.",
       icon: Shield,
-      color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30"
+      color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10"
     }
   ];
 
@@ -54,7 +54,7 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-900/30">
+        <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-500/20">
           <Activity className="h-3.5 w-3.5" />
           <span>Clinical Decision Support Platform</span>
         </span>

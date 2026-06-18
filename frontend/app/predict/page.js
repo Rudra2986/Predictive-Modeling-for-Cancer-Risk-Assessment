@@ -250,7 +250,7 @@ export default function PredictPage() {
                           onClick={() => handleGenderChange(g.val)}
                           className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                             formData.Gender === g.val
-                              ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
+                              ? 'bg-brand-50 dark:bg-brand-500/10 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
                               : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400'
                           }`}
                         >
@@ -366,7 +366,7 @@ export default function PredictPage() {
                               onClick={() => handleInputChange(item.field, opt.val)}
                               className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
                                 formData[item.field] === opt.val
-                                  ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
+                                  ? 'bg-brand-50 dark:bg-brand-500/10 border-brand-500 text-brand-700 dark:text-brand-400 font-bold'
                                   : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400'
                               }`}
                             >
@@ -416,7 +416,7 @@ export default function PredictPage() {
                   setError('');
                   setActiveTab(prev => Math.max(0, prev - 1));
                 }}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-300 disabled:opacity-40"
+                className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-slate-800 dark:hover:text-brand-400 hover:border-slate-300 dark:hover:border-brand-500/30 text-sm font-semibold text-slate-600 dark:text-slate-350 disabled:opacity-20 disabled:pointer-events-none transition-all"
               >
                 Previous
               </button>

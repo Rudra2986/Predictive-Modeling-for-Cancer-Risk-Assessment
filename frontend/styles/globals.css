@@ -21,8 +21,8 @@
 @layer components {
   /* Premium Glassmorphic Cards */
   .glass-card {
-    @apply bg-white/80 dark:bg-slate-900/85 backdrop-blur-md 
-           border border-slate-200/60 dark:border-slate-800/80 
+    @apply bg-white/80 dark:bg-slate-900/70 backdrop-blur-md 
+           border border-slate-200/60 dark:border-slate-800/70 
            shadow-sm dark:shadow-md hover:shadow-md dark:hover:shadow-lg
            transition-all duration-300 rounded-2xl;
   }

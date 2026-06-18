@@ -174,7 +174,7 @@ export default function HistoryPage() {
                     <td className="px-5 py-4 text-right">
                       <button
                         onClick={() => setSelectedItem(item)}
-                        className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800 hover:bg-brand-50 dark:hover:bg-brand-950/20 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-semibold text-slate-500 dark:text-slate-400 transition-all"
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800 hover:bg-brand-50 dark:hover:bg-brand-500/15 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-semibold text-slate-500 dark:text-slate-400 transition-all"
                       >
                         <Eye className="h-3.5 w-3.5" />
                         <span>Inspect</span>
