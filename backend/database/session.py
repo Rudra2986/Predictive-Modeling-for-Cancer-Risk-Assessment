@@ -14,7 +14,10 @@ try:
     with engine.connect() as conn:
         pass
     print("Database: Successfully connected to PostgreSQL.")
-except (OperationalError, Exception):
+except (OperationalError, Exception) as e:
+    if settings.ENVIRONMENT == "production":
+        print(f"CRITICAL DATABASE ERROR: Production database connection failed: {e}")
+        raise e
     print("Database Warning: Local PostgreSQL server is unreachable. Falling back to local SQLite database (oncorisk.db).")
     DATABASE_URL = "sqlite:///oncorisk.db"
     engine_args = {"connect_args": {"check_same_thread": False}}
