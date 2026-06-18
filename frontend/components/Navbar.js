@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Sun, Moon, Activity, LogOut, User, Menu, X, BarChart3, History, Shield } from 'lucide-react';
+import { Sun, Moon, Activity, LogOut, User, Menu, X, BarChart3, History, Shield, MessageSquare } from 'lucide-react';
 import { getToken, setToken } from '@/utils/api';
 
 export default function Navbar() {
@@ -69,6 +69,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Run Assessment', href: '/predict', icon: Activity },
     ...(isAuthenticated ? [
+      { name: 'Chat Assistant', href: '/chatbot', icon: MessageSquare },
       ...(isAdmin ? [{ name: 'Dashboard', href: '/dashboard', icon: BarChart3 }] : []),
       { name: 'History', href: '/history', icon: History }
     ] : [])

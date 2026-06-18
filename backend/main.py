@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from backend.utils.config import settings
-from backend.api import auth, predict, predictions, admin
+from backend.api import auth, predict, predictions, admin, chatbot
 
 # Configure logging
 logging.basicConfig(
@@ -76,6 +76,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(predict.router, prefix="/api")
 app.include_router(predictions.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(chatbot.router, prefix="/api")
 
 @app.get("/")
 def read_root():

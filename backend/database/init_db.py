@@ -5,7 +5,7 @@ import sys
 sys.path.append(os.getcwd())
 
 from backend.database.session import engine, Base
-from backend.database.base import User, PredictionLog
+from backend.database.base import User, PredictionLog, ChatMessage
 
 def init_database():
     print("Connecting to PostgreSQL database...")
@@ -13,7 +13,7 @@ def init_database():
         # Create all tables defined in Base
         Base.metadata.create_all(bind=engine)
         print("Success: Database tables initialized successfully!")
-        print("Created tables: 'users', 'prediction_logs'")
+        print("Created tables: 'users', 'prediction_logs', 'chat_messages'")
     except Exception as e:
         print(f"Error: Failed to connect or initialize database: {e}")
         print("\nMake sure your PostgreSQL local setup is active and running.")
