@@ -42,3 +42,20 @@ def post_chatbot_message(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected system error occurred. Please contact admin support."
         )
+
+@router.post("/clear")
+def clear_chatbot_session(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Clear the active in-memory conversation context for the authenticated user.
+    """
+    try:
+        chatbot_service.clear_user_chatbot_context(current_user.id)
+        return {"status": "success", "message": "Conversation context cleared successfully."}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not clear conversation context."
+        )
+
