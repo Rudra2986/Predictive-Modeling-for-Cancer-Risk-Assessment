@@ -47,6 +47,26 @@ export default function ChatbotPage() {
     scrollToBottom();
   }, [messages, loading]);
 
+  const handleNewChat = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await api.post('/chatbot/clear');
+      setMessages([
+        {
+          id: 'welcome',
+          sender: 'bot',
+          text: "Hello! I am your OncoRisk AI Health Assistant. I am here to help you understand your cancer risk assessments, explain the SHAP contributing factors, and provide educational lifestyle guidelines.\n\nWhat would you like to discuss today?",
+          confidence: 'HIGH'
+        }
+      ]);
+    } catch (err) {
+      setError(err.message || 'Failed to clear chatbot session. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSend = async (textToSend) => {
     const queryText = textToSend || input.trim();
     if (!queryText) return;
@@ -112,14 +132,22 @@ export default function ChatbotPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 flex flex-col h-[calc(100vh-10rem)]">
       {/* Page Header */}
-      <div className="pb-4 border-b border-slate-200/60 dark:border-slate-900 flex-shrink-0">
-        <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center space-x-2">
-          <MessageSquare className="h-7 w-7 text-brand-600 dark:text-brand-500" />
-          <span>Chat Assistant</span>
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Discuss clinical variables, lifestyle choices, and get educational screening insights
-        </p>
+      <div className="pb-4 border-b border-slate-200/60 dark:border-slate-900 flex-shrink-0 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center space-x-2">
+            <MessageSquare className="h-7 w-7 text-brand-600 dark:text-brand-500" />
+            <span>Chat Assistant</span>
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Discuss clinical variables, lifestyle choices, and get educational screening insights
+          </p>
+        </div>
+        <button
+          onClick={handleNewChat}
+          className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 hover:border-red-500/30 text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-all bg-white dark:bg-slate-900 shadow-sm active:scale-95 flex items-center space-x-1.5"
+        >
+          <span>New Chat</span>
+        </button>
       </div>
 
       {error && (
@@ -236,6 +264,11 @@ export default function ChatbotPage() {
         >
           <Send className="h-5 w-5" />
         </button>
+      </div>
+      
+      {/* Disclaimer Footer */}
+      <div className="text-center text-[11px] text-slate-400 dark:text-slate-500 pb-2 mt-1">
+        OncoRisk Assistant provides educational information only and does not replace professional medical advice.
       </div>
     </div>
   );
