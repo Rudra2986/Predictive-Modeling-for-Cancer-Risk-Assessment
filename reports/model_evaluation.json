@@ -1,79 +1,79 @@
 {
     "model_name": "XGBoost",
-    "weighted_f1": 0.8774002005905446,
-    "accuracy": 0.8825,
+    "weighted_f1": 0.8776571130019406,
+    "accuracy": 0.88,
     "classification_report": {
         "Low": {
-            "precision": 0.7924528301886793,
-            "recall": 0.6461538461538462,
-            "f1-score": 0.711864406779661,
+            "precision": 0.7377049180327869,
+            "recall": 0.6923076923076923,
+            "f1-score": 0.7142857142857143,
             "support": 65.0
         },
         "Medium": {
-            "precision": 0.9036144578313253,
-            "recall": 0.9523809523809523,
-            "f1-score": 0.9273570324574961,
+            "precision": 0.913312693498452,
+            "recall": 0.9365079365079365,
+            "f1-score": 0.9247648902821317,
             "support": 315.0
         },
         "High": {
-            "precision": 0.7333333333333333,
-            "recall": 0.55,
-            "f1-score": 0.6285714285714286,
+            "precision": 0.75,
+            "recall": 0.6,
+            "f1-score": 0.6666666666666666,
             "support": 20.0
         },
-        "accuracy": 0.8825,
+        "accuracy": 0.88,
         "macro avg": {
-            "precision": 0.8098002071177793,
-            "recall": 0.7161782661782663,
-            "f1-score": 0.7559309559361953,
+            "precision": 0.8003392038437463,
+            "recall": 0.742938542938543,
+            "f1-score": 0.7685724237448376,
             "support": 400.0
         },
         "weighted avg": {
-            "precision": 0.8770366371144958,
-            "recall": 0.8825,
-            "f1-score": 0.8774002005905446,
+            "precision": 0.8766107953103588,
+            "recall": 0.88,
+            "f1-score": 0.8776571130019406,
             "support": 400.0
         }
     },
     "confusion_matrix": [
         [
-            42,
-            23,
+            45,
+            20,
             0
         ],
         [
-            11,
-            300,
+            16,
+            295,
             4
         ],
         [
             0,
-            9,
-            11
+            8,
+            12
         ]
     ],
     "feature_importances": {
-        "Air_Pollution": 0.16105176508426666,
-        "Family_History": 0.09888378530740738,
-        "Gender": 0.07632751017808914,
-        "Alcohol_Use": 0.07056088745594025,
-        "Diet_Salted_Processed": 0.06201249733567238,
-        "Smoking": 0.05696503445506096,
-        "H_Pylori_Infection": 0.05552645027637482,
-        "Cancer_Type_Lung": 0.04492911323904991,
-        "Diet_Red_Meat": 0.04396473988890648,
-        "Cancer_Type_Skin": 0.04239743575453758,
-        "Obesity": 0.04182200878858566,
-        "Occupational_Hazards": 0.03863820061087608,
-        "Cancer_Type_Colon": 0.029013952240347862,
-        "Cancer_Type_Prostate": 0.02816084213554859,
-        "Physical_Activity": 0.02463952824473381,
-        "Cancer_Type_Breast": 0.02319435216486454,
-        "Fruit_Veg_Intake": 0.02269425243139267,
-        "Calcium_Intake": 0.01889890246093273,
-        "Physical_Activity_Level": 0.017701413482427597,
-        "BMI": 0.015309527516365051,
-        "BRCA_Mutation": 0.014341904781758785,
-        "Age": 0.012965910136699677
+        "Air_Pollution": 0.152890145778656,
+        "Family_History": 0.10168624669313431,
+        "Gender": 0.08245649188756943,
+        "Alcohol_Use": 0.07450579851865768,
+        "Diet_Salted_Processed": 0.06023730710148811,
+        "Smoking": 0.05939687043428421,
+        "Cancer_Type_Skin": 0.047286760061979294,
+        "Diet_Red_Meat": 0.04427078738808632,
+        "Occupational_Hazards": 0.04338425397872925,
+        "H_Pylori_Infection": 0.042796336114406586,
+        "Cancer_Type_Lung": 0.04212144762277603,
+        "Obesity": 0.036578454077243805,
+        "Cancer_Type_Colon": 0.035193681716918945,
+        "Physical_Activity": 0.03075290471315384,
+        "Cancer_Type_Prostate": 0.02959364466369152,
+        "Cancer_Type_Breast": 0.023878484964370728,
+        "Fruit_Veg_Intake": 0.021198419854044914,
+        "Calcium_Intake": 0.02003672905266285,
+        "Physical_Activity_Level": 0.017705654725432396,
+        "BMI": 0.01461064163595438,
+        "Age": 0.009992443956434727,
+        "BRCA_Mutation": 0.009426360949873924
     }
 }

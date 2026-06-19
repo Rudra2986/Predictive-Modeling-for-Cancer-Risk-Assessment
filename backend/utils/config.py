@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     # Database Configurations
     DATABASE_URL: str = "sqlite:///oncorisk.db"
 
+    # Chatbot Configurations
+    APPEND_DISCLAIMER_TO_MESSAGES: bool = False
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
