@@ -255,11 +255,14 @@ export default function Dashboard() {
                     cy="50%"
                     innerRadius={52}
                     outerRadius={68}
-                    paddingAngle={3}
+                    paddingAngle={4}
+                    stroke="none"
+                    cornerRadius={4}
+                    shapeRendering="geometricPrecision"
                     dataKey="value"
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                     ))}
                   </Pie>
                   <Tooltip 
