@@ -213,6 +213,63 @@ def test_chatbot_endpoints():
         assert "I do not have a previous response to simplify." in data["answer"]
         assert data["confidence"] == "LOW"
 
+        # ==========================================
+        # test: Issue 1 & Issue 2 Enhancements
+        # ==========================================
+        # 1. Verify queries for a user WITH NO assessment history
+        # (Using headers_b as User B has never run an assessment yet)
+        personal_queries = [
+            "what is my risk",
+            "what is my score",
+            "what was my result",
+            "show my prediction",
+            "why did I get high risk",
+            "explain my result"
+        ]
+        for query in personal_queries:
+            resp = client.post("/api/chatbot/message", json={"message": query}, headers=headers_b)
+            assert resp.status_code == 200
+            data = resp.json()
+            assert "I couldn't find a previous assessment. Complete a risk assessment first" in data["answer"]
+            assert data["confidence"] == "LOW"
+            # Verify no response body contains the disclaimer text (Issue 1)
+            assert "does not replace professional medical advice" not in data["answer"]
+
+        # 2. Run prediction assessment for User B to establish history
+        prediction_payload = {
+            "Age": 55,
+            "Gender": 1,
+            "Smoking": 7,
+            "Alcohol_Use": 9,
+            "Obesity": 8,
+            "Family_History": 0,
+            "Diet_Red_Meat": 4,
+            "Diet_Salted_Processed": 6,
+            "Fruit_Veg_Intake": 3,
+            "Physical_Activity": 2,
+            "Air_Pollution": 2,
+            "Occupational_Hazards": 10,
+            "BRCA_Mutation": 0,
+            "H_Pylori_Infection": 0,
+            "Calcium_Intake": 4,
+            "BMI": 27.0,
+            "Physical_Activity_Level": 6,
+            "Cancer_Type": "Lung"
+        }
+        resp = client.post("/api/predict", json=prediction_payload, headers=headers_b)
+        assert resp.status_code == 200
+        
+        # 3. Verify queries for a user WITH assessment history (User B)
+        # They should return personalized risk/explanation answers and not generic education.
+        for query in personal_queries:
+            resp = client.post("/api/chatbot/message", json={"message": query}, headers=headers_b)
+            assert resp.status_code == 200
+            data = resp.json()
+            # Assert they mention personalized assessment parameters or model classifications
+            assert ("classified as" in data["answer"] or "category is" in data["answer"] or "confidence" in data["answer"] or "risk contributor" in data["answer"])
+            # Ensure no disclaimer is appended
+            assert "does not replace professional medical advice" not in data["answer"]
+
     finally:
         # Cleanup
         for email in [user_a_email, user_b_email]:

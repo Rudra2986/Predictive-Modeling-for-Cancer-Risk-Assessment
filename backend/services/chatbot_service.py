@@ -203,7 +203,7 @@ def generate_response(db: Session, current_user: User, message: str) -> Tuple[st
                 intent = "MEDICAL_GENERIC"
         else:
             # Query type classification
-            is_why_query = any(x in clean_msg for x in ["why", "score", "prediction", "result", "explain", "factors", "affected", "class"])
+            is_why_query = any(x in clean_msg for x in ["why", "score", "prediction", "result", "explain", "factors", "affected", "class", "my risk", "what is my risk"])
             is_improve_query = any(x in clean_msg for x in ["improve", "focus", "lower", "reduce", "lifestyle", "diet", "exercise", "smoking", "alcohol", "obesity", "bmi"])
             is_screening_query = any(x in clean_msg for x in ["screening", "test", "checkup", "mammogram", "colonoscopy", "exam", "detect"])
             
@@ -294,12 +294,7 @@ def generate_response(db: Session, current_user: User, message: str) -> Tuple[st
         return refusal_msg, "LOW"
 
     # 5. Safety disclaimer force-append
-    disclaimer = "\n\n*This information is educational only and does not replace professional medical advice.*"
-    from backend.utils.config import settings
-    if settings.APPEND_DISCLAIMER_TO_MESSAGES:
-        final_answer = answer + disclaimer
-    else:
-        final_answer = answer
+    final_answer = answer
     
     # 6. Append messages to conversation context service
     conversation_context_service.append_message(

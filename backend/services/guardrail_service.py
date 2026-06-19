@@ -156,7 +156,12 @@ class GuardrailService:
             r"why\s+did\s+i\s+get\s+low\s+risk",
             r"why\s+is\s+my\s+risk\s+medium",
             r"why\s+is\s+my\s+risk\s+high",
-            r"why\s+is\s+my\s+risk\s+low"
+            r"why\s+is\s+my\s+risk\s+low",
+            r"what\s+is\s+my\s+risk",
+            r"what\s+is\s+my\s+score",
+            r"what\s+was\s+my\s+result",
+            r"show\s+my\s+prediction",
+            r"explain\s+my\s+result"
         ]
 
     def classify_message(self, message: str, user_id: int) -> Tuple[str, Optional[str]]:
