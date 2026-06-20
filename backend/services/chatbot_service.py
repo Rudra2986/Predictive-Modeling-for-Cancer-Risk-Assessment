@@ -121,6 +121,7 @@ def generate_response(db: Session, current_user: User, message: str, session_uui
             # Update session timestamp
             session_record.updated_at = func.now()
             db.commit()
+            cached_res["message_id"] = chat_log.id
         except Exception as db_err:
             print(f"Chatbot Service Warning: Failed to persist cache hit chat log: {db_err}")
             
@@ -159,6 +160,7 @@ def generate_response(db: Session, current_user: User, message: str, session_uui
         # Update session timestamp
         session_record.updated_at = func.now()
         db.commit()
+        res["message_id"] = chat_log.id
     except Exception as db_err:
         print(f"Chatbot Service Warning: Failed to persist chat log: {db_err}")
 

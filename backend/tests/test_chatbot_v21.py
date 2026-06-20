@@ -186,6 +186,15 @@ def test_chatbot_v21_pipeline(test_setup):
     hijack_vote = client.post("/api/chatbot/feedback", json={"message_id": chat_msg.id, "feedback_type": "HELPFUL"}, headers=headers_a)
     assert hijack_vote.status_code == 404
 
+    # Verify invalid feedback values are rejected
+    for invalid_val in ["GOOD", "BAD", 1, True, "LIKE"]:
+        inv_resp = client.post(
+            "/api/chatbot/feedback",
+            json={"message_id": chat_msg.id, "feedback_type": invalid_val},
+            headers=headers_b
+        )
+        assert inv_resp.status_code in [400, 422]
+
     # ==========================================
     # Scenario E: Trend Analysis min 2 assessments
     # ==========================================

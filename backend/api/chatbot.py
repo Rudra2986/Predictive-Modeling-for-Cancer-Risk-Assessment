@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Literal
 import uuid
 
 from backend.database.session import get_db
@@ -11,6 +11,9 @@ from backend.models.chat_session import ChatSession
 from backend.models.chat_message import ChatMessage
 from backend.models.chatbot_feedback import ChatbotFeedback
 from backend.services import chatbot_service
+from backend.services.ai_service import ai_service
+from backend.services.confidence_service import confidence_service
+from backend.services.citation_service import citation_service
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
@@ -23,6 +26,7 @@ class ChatResponse(BaseModel):
     confidence: str
     sources: List[str] = []
     suggestions: List[str] = []
+    message_id: Optional[int] = None
 
 class SessionCreateResponse(BaseModel):
     session_uuid: str
@@ -34,13 +38,18 @@ class SessionListResponse(BaseModel):
     created_at: str
 
 class MessageResponse(BaseModel):
+    id: int
     role: str
     message: str
+    confidence: Optional[str] = None
+    sources: Optional[List[str]] = []
+    suggestions: Optional[List[str]] = []
+    feedback_type: Optional[str] = None
     created_at: str
 
 class FeedbackRequest(BaseModel):
     message_id: int
-    feedback_type: str = Field(..., description="Must be HELPFUL or NOT_HELPFUL")
+    feedback_type: Literal["HELPFUL", "NOT_HELPFUL"] = Field(..., description="Must be HELPFUL or NOT_HELPFUL")
 
 @router.post("/message", response_model=ChatResponse)
 def post_chatbot_message(
@@ -62,7 +71,8 @@ def post_chatbot_message(
             answer=res["answer"],
             confidence=res["confidence"],
             sources=res.get("sources", []),
-            suggestions=res.get("suggestions", [])
+            suggestions=res.get("suggestions", []),
+            message_id=res.get("message_id")
         )
     except HTTPException as http_exc:
         raise http_exc
@@ -225,13 +235,51 @@ def get_session_messages(
     res = []
     for m in messages:
         res.append(MessageResponse(
+            id=m.id * 1000 + 1,  # Unique ID placeholder for user role message
             role="user",
             message=m.question,
             created_at=m.created_at.isoformat()
         ))
+        
+        # Dynamically recreate metadata for assistant role message
+        intent = ai_service._classify_intent(m.question, {})
+        confidence = confidence_service.get_confidence_for_intent(intent)
+        if m.answer == "I do not have a previous response to simplify." or m.answer.startswith("I couldn't find a previous assessment."):
+            confidence = "LOW"
+            
+        matched_topics = []
+        clean_msg = m.question.strip().lower()
+        if "breast" in clean_msg:
+            matched_topics.append("breast_cancer")
+        if "lung" in clean_msg:
+            matched_topics.append("lung_cancer")
+        if "colon" in clean_msg or "colorectal" in clean_msg:
+            matched_topics.append("colon_cancer")
+        if "prostate" in clean_msg:
+            matched_topics.append("prostate_cancer")
+        if "skin" in clean_msg or "melanoma" in clean_msg:
+            matched_topics.append("skin_cancer")
+        if "lifestyle" in clean_msg or "healthy" in clean_msg or "prevent" in clean_msg:
+            matched_topics.append("lifestyle")
+            
+        sources = citation_service.generate_citations(intent, matched_topics)
+        suggestions = ai_service._generate_suggestions(m.question, intent)
+        
+        # Check feedback vote
+        feedback = db.query(ChatbotFeedback).filter(
+            ChatbotFeedback.chat_message_id == m.id,
+            ChatbotFeedback.user_id == current_user.id
+        ).first()
+        feedback_type = feedback.feedback_type if feedback else None
+
         res.append(MessageResponse(
+            id=m.id,  # ChatMessage.id for feedback voting
             role="assistant",
             message=m.answer,
+            confidence=confidence,
+            sources=sources,
+            suggestions=suggestions,
+            feedback_type=feedback_type,
             created_at=m.created_at.isoformat()
         ))
     return res

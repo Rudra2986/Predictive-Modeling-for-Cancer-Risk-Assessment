@@ -13,7 +13,9 @@ class ConfidenceService:
         "MEDICAL_GENERIC",
         "PLATFORM_HELP",
         "ASSESSMENT_GUIDANCE",
-        "MEDICAL_LIFESTYLE"
+        "MEDICAL_LIFESTYLE",
+        "MEDICAL_SIMPLIFY",
+        "MEDICAL_ANYTHING_ELSE"
     }
 
     def get_confidence_for_intent(self, intent: str) -> str:

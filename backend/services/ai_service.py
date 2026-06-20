@@ -37,6 +37,11 @@ class AIService:
             
         # 3. Determine confidence level using confidence service
         confidence = confidence_service.get_confidence_for_intent(intent)
+        if response_text in [
+            "I do not have a previous response to simplify.",
+            "I couldn't find a previous assessment. Complete a risk assessment first so I can provide personalized guidance."
+        ]:
+            confidence = "LOW"
         
         # 4. Generate citations
         sources = citation_service.generate_citations(intent, matched_topics)
@@ -215,7 +220,7 @@ class AIService:
                     "and review your immunizations history with a physician."
                 )
             else:
-                response_text = "To learn more, you can explore other dashboard elements or consult a clinician for personalized health advice."
+                response_text = "To learn more, you can explore the other sections of the dashboard or consult a clinician for personalized health advice."
             return response_text, matched_topics
 
         # 3. Platform Navigation Guidance
