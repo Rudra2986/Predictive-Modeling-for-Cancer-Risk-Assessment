@@ -222,9 +222,10 @@ export default function ChatbotPage() {
       };
       setMessages(prev => [...prev, botMsg]);
 
-      // If activeSessionUuid was null, refresh the sessions list to match the auto-created one
-      if (!activeSessionUuid) {
-        fetchSessions(true);
+      // If this was the first user message in the session, refresh the sessions list to pull the generated title
+      const isFirstUserMessage = messages.filter(m => m.sender === 'user').length === 0;
+      if (isFirstUserMessage) {
+        fetchSessions(activeSessionUuid ? false : true);
       }
     } catch (err) {
       setError(err.message || 'Failed to communicate with chatbot service. Please try again.');

@@ -324,3 +324,133 @@ def test_end_to_end_user_journey(test_setup):
             db.query(User).filter(User.id == target_user.id).delete()
             db.commit()
         db.close()
+
+def test_session_title_generation(test_setup):
+    db = SessionLocal()
+    try:
+        email = "title_test_user@oncorisk.ai"
+        # Cleanup if exists
+        old_user = db.query(User).filter(User.email == email).first()
+        if old_user:
+            db.query(ChatbotFeedback).filter(ChatbotFeedback.user_id == old_user.id).delete()
+            db.query(ChatMessage).filter(ChatMessage.user_id == old_user.id).delete()
+            db.query(ChatSession).filter(ChatSession.user_id == old_user.id).delete()
+            db.query(User).filter(User.id == old_user.id).delete()
+            db.commit()
+
+        # Register and Login
+        reg = client.post("/api/auth/register", json={"email": email, "password": "Password123!"})
+        assert reg.status_code == 201
+        log = client.post("/api/auth/login", json={"email": email, "password": "Password123!"})
+        assert log.status_code == 200
+        token = log.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 1. Test title generation from medical questions
+        # Create Session 1
+        sess1 = client.post("/api/chatbot/sessions", headers=headers)
+        assert sess1.status_code == 201
+        uuid1 = sess1.json()["session_uuid"]
+        assert sess1.json()["title"] == "New Chat" # Verify initial title is "New Chat"
+
+        # Ask first medical question
+        resp1 = client.post(
+            "/api/chatbot/message",
+            json={"message": "Why did I get High Risk?", "session_uuid": uuid1},
+            headers=headers
+        )
+        assert resp1.status_code == 200
+        
+        # Verify title updated to "High Risk Explanation"
+        db_sess1 = db.query(ChatSession).filter(ChatSession.session_uuid == uuid1).first()
+        assert db_sess1.title == "High Risk Explanation"
+
+        # 2. Test title generation from platform help questions
+        # Create Session 2
+        sess2 = client.post("/api/chatbot/sessions", headers=headers)
+        uuid2 = sess2.json()["session_uuid"]
+        
+        # Ask platform question
+        resp2 = client.post(
+            "/api/chatbot/message",
+            json={"message": "How do I view my previous assessments?", "session_uuid": uuid2},
+            headers=headers
+        )
+        assert resp2.status_code == 200
+        
+        db_sess2 = db.query(ChatSession).filter(ChatSession.session_uuid == uuid2).first()
+        assert db_sess2.title == "Viewing Assessment History"
+
+        # 3. Test title generation from educational questions
+        # Create Session 3
+        sess3 = client.post("/api/chatbot/sessions", headers=headers)
+        uuid3 = sess3.json()["session_uuid"]
+        
+        # Ask educational question
+        resp3 = client.post(
+            "/api/chatbot/message",
+            json={"message": "What does obesity profile index mean?", "session_uuid": uuid3},
+            headers=headers
+        )
+        assert resp3.status_code == 200
+        
+        db_sess3 = db.query(ChatSession).filter(ChatSession.session_uuid == uuid3).first()
+        assert db_sess3.title == "Obesity Profile Index"
+
+        # 4. Test fallback title generation
+        # Create Session 4
+        sess4 = client.post("/api/chatbot/sessions", headers=headers)
+        uuid4 = sess4.json()["session_uuid"]
+        
+        # Ask greeting question
+        resp4 = client.post(
+            "/api/chatbot/message",
+            json={"message": "hello", "session_uuid": uuid4},
+            headers=headers
+        )
+        assert resp4.status_code == 200
+        
+        db_sess4 = db.query(ChatSession).filter(ChatSession.session_uuid == uuid4).first()
+        assert db_sess4.title == "General Health Discussion"
+
+        # 5. Test maximum length enforcement
+        # Create Session 5
+        sess5 = client.post("/api/chatbot/sessions", headers=headers)
+        uuid5 = sess5.json()["session_uuid"]
+        
+        # Ask very long query
+        very_long_query = "What is the detailed significance of maintaining consistent weekly physical activity routines alongside balanced red meat consumption?"
+        resp5 = client.post(
+            "/api/chatbot/message",
+            json={"message": very_long_query, "session_uuid": uuid5},
+            headers=headers
+        )
+        assert resp5.status_code == 200
+        
+        db_sess5 = db.query(ChatSession).filter(ChatSession.session_uuid == uuid5).first()
+        assert len(db_sess5.title) <= 40
+        assert db_sess5.title.endswith("...")
+
+        # 6. Test session title immutability after first generation
+        # Session 1 already has title "High Risk Explanation"
+        # Ask a second message in Session 1
+        resp_sec = client.post(
+            "/api/chatbot/message",
+            json={"message": "What is obesity profile index?", "session_uuid": uuid1},
+            headers=headers
+        )
+        assert resp_sec.status_code == 200
+        
+        db.refresh(db_sess1)
+        # Title must not change to "Obesity Profile Index"
+        assert db_sess1.title == "High Risk Explanation"
+
+    finally:
+        target_user = db.query(User).filter(User.email == "title_test_user@oncorisk.ai").first()
+        if target_user:
+            db.query(ChatbotFeedback).filter(ChatbotFeedback.user_id == target_user.id).delete()
+            db.query(ChatMessage).filter(ChatMessage.user_id == target_user.id).delete()
+            db.query(ChatSession).filter(ChatSession.user_id == target_user.id).delete()
+            db.query(User).filter(User.id == target_user.id).delete()
+            db.commit()
+        db.close()

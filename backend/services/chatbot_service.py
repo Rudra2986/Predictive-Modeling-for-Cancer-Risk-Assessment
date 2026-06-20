@@ -20,6 +20,72 @@ def clear_user_chatbot_context(user_id: int) -> None:
     """
     conversation_context_service.clear_context(user_id)
 
+def generate_session_title(message: str) -> str:
+    """
+    Intelligently generates a clean title for a chat session from the first query.
+    """
+    import re
+    clean_msg = message.strip().lower()
+    
+    # 1. Check for greetings or very short queries
+    greetings = {"hi", "hello", "thanks", "thank you", "hey", "hola", "good morning", "good afternoon"}
+    if clean_msg in greetings or len(clean_msg.split()) <= 1:
+        return "General Health Discussion"
+        
+    # 2. Key phrase overrides
+    if any(x in clean_msg for x in ["high risk", "my risk", "why is my risk", "risk explanation"]):
+        return "High Risk Explanation"
+    if "obesity profile" in clean_msg:
+        return "Obesity Profile Index"
+    if "smoking score" in clean_msg:
+        return "Smoking Score Guidance"
+    if any(x in clean_msg for x in ["view", "see", "history", "previous assessments", "prediction history"]):
+        return "Viewing Assessment History"
+    if any(x in clean_msg for x in ["compare", "assessments", "trend"]):
+        return "Assessment Comparison"
+    if "lung cancer" in clean_msg:
+        return "Lung Cancer Overview"
+    if "breast cancer" in clean_msg:
+        return "Breast Cancer Overview"
+    if "colon cancer" in clean_msg or "colorectal" in clean_msg:
+        return "Colorectal Cancer Overview"
+    if "prostate" in clean_msg:
+        return "Prostate Cancer Overview"
+    if "skin cancer" in clean_msg:
+        return "Skin Cancer Overview"
+    if "mammogram" in clean_msg:
+        return "Mammogram Screening"
+    if "colonoscopy" in clean_msg:
+        return "Colonoscopy Screening"
+    if "lifestyle" in clean_msg:
+        return "Lifestyle Recommendations"
+    if "screening" in clean_msg:
+        return "Screening Guidelines"
+
+    # 3. Rules-based generic parsing
+    words_to_remove = ["what", "how", "can", "should", "explain", "please", "tell me"]
+    processed = clean_msg
+    for w in words_to_remove:
+        processed = re.sub(r'\b' + re.escape(w) + r'\b', '', processed)
+        
+    # Strip common helper verbs/pronouns/articles
+    processed = re.sub(r'\b(is\s+a|is|does|mean|for|do|i|my|the|about)\b', '', processed)
+    
+    # Clean non-alphanumeric and multiple spaces
+    processed = re.sub(r'[^\w\s-]', '', processed)
+    processed = re.sub(r'\s+', ' ', processed).strip()
+    
+    title = processed.title()
+    
+    generic_titles = {"", "new chat", "chat session", "conversation", "untitled"}
+    if title.lower() in generic_titles:
+        return "General Health Discussion"
+        
+    if len(title) > 40:
+        title = title[:37] + "..."
+        
+    return title
+
 def generate_response(db: Session, current_user: User, message: str, session_uuid: Optional[str] = None) -> Dict[str, Any]:
     """
     Orchestrates response generation using the V2.1 conversational AI architecture.
@@ -73,10 +139,9 @@ def generate_response(db: Session, current_user: User, message: str, session_uui
         if not session_record:
             # Auto-create session
             import uuid
-            title = message[:40] + ("..." if len(message) > 40 else "")
             session_record = ChatSession(
                 user_id=current_user.id,
-                title=title,
+                title="New Chat",
                 session_uuid=str(uuid.uuid4())
             )
             db.add(session_record)
@@ -111,6 +176,11 @@ def generate_response(db: Session, current_user: User, message: str, session_uui
         
         # Persist to database
         try:
+            # Generate title if this is the first message in the session
+            msg_count = db.query(ChatMessage).filter(ChatMessage.session_id == session_record.id).count()
+            if msg_count == 0:
+                session_record.title = generate_session_title(message)
+
             chat_log = ChatMessage(
                 user_id=current_user.id,
                 session_id=session_record.id,
@@ -150,6 +220,11 @@ def generate_response(db: Session, current_user: User, message: str, session_uui
 
     # 10. Persist to database
     try:
+        # Generate title if this is the first message in the session
+        msg_count = db.query(ChatMessage).filter(ChatMessage.session_id == session_record.id).count()
+        if msg_count == 0:
+            session_record.title = generate_session_title(message)
+
         chat_log = ChatMessage(
             user_id=current_user.id,
             session_id=session_record.id,

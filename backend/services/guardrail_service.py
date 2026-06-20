@@ -140,7 +140,9 @@ class GuardrailService:
             "clinical", "patient", "score", "metric", "level", "diagnose", "doctor",
             "compare", "assessments", "predictions", "changed", "change", "improved", "improve",
             # Follow-up allowed vocabulary
-            "explain", "simplify", "simpler", "simple", "words", "terms", "detail", "details"
+            "explain", "simplify", "simpler", "simple", "words", "terms", "detail", "details",
+            # Greetings allowed to pass guardrails for fallback session titles
+            "hello", "hi", "hey", "thanks", "thank"
         }
         
         # Intent expressions that represent valid medical questions
