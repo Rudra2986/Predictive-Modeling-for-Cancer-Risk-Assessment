@@ -112,7 +112,7 @@ export default function ChatbotPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await api.post('/chatbot/sessions', { title: 'New Assessment Chat' });
+      const response = await api.post('/chatbot/sessions', { title: 'New Chat' });
       const newSess = {
         session_uuid: response.session_uuid,
         title: response.title,

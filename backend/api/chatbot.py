@@ -188,6 +188,8 @@ def create_chat_session(
     Create a new chat session.
     """
     session_title = title or "New Chat"
+    if session_title == "New Assessment Chat":
+        session_title = "New Chat"
     new_session = ChatSession(
         user_id=current_user.id,
         title=session_title
