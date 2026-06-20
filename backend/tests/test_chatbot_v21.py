@@ -230,3 +230,97 @@ def test_chatbot_v21_pipeline(test_setup):
     db.query(User).filter(User.id.in_([user_a.id, user_b.id])).delete()
     db.commit()
     db.close()
+
+def test_end_to_end_user_journey(test_setup):
+    db = SessionLocal()
+    try:
+        # Create a new test user to keep it completely isolated
+        email = "e2e_journey_user@oncorisk.ai"
+        # Cleanup if exists
+        old_user = db.query(User).filter(User.email == email).first()
+        if old_user:
+            db.query(ChatbotFeedback).filter(ChatbotFeedback.user_id == old_user.id).delete()
+            db.query(ChatMessage).filter(ChatMessage.user_id == old_user.id).delete()
+            db.query(ChatSession).filter(ChatSession.user_id == old_user.id).delete()
+            db.query(User).filter(User.id == old_user.id).delete()
+            db.commit()
+
+        # Register and Login
+        reg = client.post("/api/auth/register", json={"email": email, "password": "Password123!"})
+        assert reg.status_code == 201
+        log = client.post("/api/auth/login", json={"email": email, "password": "Password123!"})
+        assert log.status_code == 200
+        token = log.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        user = db.query(User).filter(User.email == email).first()
+        assert user is not None
+
+        # 1. Create Session
+        sess_resp = client.post("/api/chatbot/sessions?title=E2E Journey Session", headers=headers)
+        assert sess_resp.status_code == 201
+        sess_data = sess_resp.json()
+        sess_uuid = sess_data["session_uuid"]
+        assert sess_uuid is not None
+
+        # 2. Ask Medical Question
+        msg_resp = client.post(
+            "/api/chatbot/message",
+            json={"message": "What is lung cancer?", "session_uuid": sess_uuid},
+            headers=headers
+        )
+        assert msg_resp.status_code == 200
+        msg_data = msg_resp.json()
+        assert "lung cancer" in msg_data["answer"].lower()
+        message_id = msg_data["message_id"]
+        assert message_id is not None
+
+        # 3. Get Response - verified in previous step
+
+        # 4. Submit Feedback
+        feedback_resp = client.post(
+            "/api/chatbot/feedback",
+            json={"message_id": message_id, "feedback_type": "HELPFUL"},
+            headers=headers
+        )
+        assert feedback_resp.status_code == 200
+
+        # Assert feedback is in DB
+        db_fb = db.query(ChatbotFeedback).filter(ChatbotFeedback.chat_message_id == message_id).first()
+        assert db_fb is not None
+        assert db_fb.feedback_type == "HELPFUL"
+
+        # 5. Load Session (get messages)
+        load_resp = client.get(f"/api/chatbot/sessions/{sess_uuid}/messages", headers=headers)
+        assert load_resp.status_code == 200
+        load_data = load_resp.json()
+        assert len(load_data) >= 2 # one user message and one assistant message
+        # Verify the message text and feedback in the load response
+        assistant_msgs = [m for m in load_data if m["role"] == "assistant"]
+        assert len(assistant_msgs) > 0
+        assert assistant_msgs[0]["feedback_type"] == "HELPFUL"
+        assert assistant_msgs[0]["id"] == message_id
+
+        # 6. Delete Session
+        del_resp = client.delete(f"/api/chatbot/sessions/{sess_uuid}", headers=headers)
+        assert del_resp.status_code == 200
+
+        # 7. Verify Hidden (soft-deleted sessions do not show in listing, and messages get 404)
+        list_resp = client.get("/api/chatbot/sessions", headers=headers)
+        assert list_resp.status_code == 200
+        session_uuids = [s["session_uuid"] for s in list_resp.json()]
+        assert sess_uuid not in session_uuids
+
+        direct_get = client.get(f"/api/chatbot/sessions/{sess_uuid}/messages", headers=headers)
+        assert direct_get.status_code == 404
+
+    finally:
+        # Cleanup database records for this user
+        target_user = db.query(User).filter(User.email == "e2e_journey_user@oncorisk.ai").first()
+        if target_user:
+            db.query(ChatbotFeedback).filter(ChatbotFeedback.user_id == target_user.id).delete()
+            db.query(ChatMessage).filter(ChatMessage.user_id == target_user.id).delete()
+            db.query(ChatSession).filter(ChatSession.user_id == target_user.id).delete()
+            db.query(User).filter(User.id == target_user.id).delete()
+            db.commit()
+        db.close()
