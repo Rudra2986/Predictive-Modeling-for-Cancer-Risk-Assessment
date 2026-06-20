@@ -138,7 +138,9 @@ class GuardrailService:
             "pollution", "occupational", "hazard", "workplace", "asbestos", 
             "radiation", "chemical", "pylori", "infection", "gastric", "advice",
             "clinical", "patient", "score", "metric", "level", "diagnose", "doctor",
-            "compare", "assessments", "predictions", "changed", "change", "improved", "improve"
+            "compare", "assessments", "predictions", "changed", "change", "improved", "improve",
+            # Follow-up allowed vocabulary
+            "explain", "simplify", "simpler", "simple", "words", "terms", "detail", "details"
         }
         
         # Intent expressions that represent valid medical questions
@@ -168,7 +170,15 @@ class GuardrailService:
             r"compare\s+.*assessment(s)?",
             r"compare\s+.*prediction(s)?",
             r"has\s+my\s+risk\s+improved",
-            r"what\s+changed\s+most"
+            r"what\s+changed\s+most",
+            
+            # Follow-up allowed intents
+            r"explain\s+(that\s+)?(in\s+)?(simpler\s+)?(words|terms)",
+            r"simplify",
+            r"anything\s+else",
+            r"what\s+else",
+            r"tell\s+me\s+more",
+            r"go\s+on"
         ]
 
     def classify_message(self, message: str, user_id: int) -> Tuple[str, Optional[str]]:
