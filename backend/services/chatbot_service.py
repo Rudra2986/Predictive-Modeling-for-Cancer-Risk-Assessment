@@ -74,7 +74,9 @@ def generate_response(db: Session, current_user: User, message: str) -> Tuple[st
 
     # 2. Safety & Allow-list Validation Classify
     category, refusal_reason = guardrail.classify_message(message, current_user.id)
-    if category == guardrail.SECURITY_SENSITIVE:
+    if category == guardrail.PROMPT_INJECTION:
+        return "I cannot assist with requests that attempt to bypass system safety or access restricted information.", "LOW"
+    elif category == guardrail.SECURITY_SENSITIVE:
         return refusal_msg, "LOW"
         
     # 3. Check for Follow-Up Queries (Simplify or Anything Else) using conversation context service

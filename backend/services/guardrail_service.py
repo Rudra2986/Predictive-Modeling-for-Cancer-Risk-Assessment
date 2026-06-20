@@ -7,6 +7,7 @@ logger = logging.getLogger("backend.security.chatbot")
 
 class GuardrailService:
     # Intent category constants
+    PROMPT_INJECTION = "PROMPT_INJECTION"
     SECURITY_SENSITIVE = "SECURITY_SENSITIVE"
     PLATFORM_HELP = "PLATFORM_HELP"
     ASSESSMENT_GUIDANCE = "ASSESSMENT_GUIDANCE"
@@ -73,7 +74,8 @@ class GuardrailService:
         # Synonym lists for PLATFORM_HELP questions
         self.history_aliases = [
             "history", "my history", "view history", "show history",
-            "prediction history", "assessment history", "previous assessments"
+            "prediction history", "assessment history", "previous assessments",
+            "previous predictions", "previous prediction", "my previous predictions"
         ]
         self.assessment_aliases = [
             "run assessment", "start assessment", "new assessment",
@@ -135,7 +137,8 @@ class GuardrailService:
             "calcium", "fruit", "vegetable", "processed", "meat", "salted", 
             "pollution", "occupational", "hazard", "workplace", "asbestos", 
             "radiation", "chemical", "pylori", "infection", "gastric", "advice",
-            "clinical", "patient", "score", "metric", "level", "diagnose", "doctor"
+            "clinical", "patient", "score", "metric", "level", "diagnose", "doctor",
+            "compare", "assessments", "predictions", "changed", "change", "improved", "improve"
         }
         
         # Intent expressions that represent valid medical questions
@@ -161,7 +164,11 @@ class GuardrailService:
             r"what\s+is\s+my\s+score",
             r"what\s+was\s+my\s+result",
             r"show\s+my\s+prediction",
-            r"explain\s+my\s+result"
+            r"explain\s+my\s+result",
+            r"compare\s+.*assessment(s)?",
+            r"compare\s+.*prediction(s)?",
+            r"has\s+my\s+risk\s+improved",
+            r"what\s+changed\s+most"
         ]
 
     def classify_message(self, message: str, user_id: int) -> Tuple[str, Optional[str]]:
@@ -170,16 +177,24 @@ class GuardrailService:
         Returns a tuple of (category, reason_if_blocked).
         
         Processing order:
-        1. Security Check
-        2. Platform Help Check
-        3. Assessment Guidance Check
-        4. Medical Query Check
-        5. Out of Scope fallback
+        1. Prompt Injection Check
+        2. Security Check
+        3. Platform Help Check
+        4. Assessment Guidance Check
+        5. Medical Query Check
+        6. Out of Scope fallback
         """
         # Normalize whitespace and case
         clean_msg = " ".join(message.strip().lower().split())
 
-        # 1. Security Check
+        # 1. Prompt Injection Check
+        from backend.services.prompt_security_service import prompt_security_service
+        if prompt_security_service.is_prompt_injection(message):
+            reason = "Prompt injection/override attempt"
+            self._log_rejection(user_id, message, reason)
+            return self.PROMPT_INJECTION, reason
+
+        # 2. Security Check
         for pattern in self.forbidden_patterns:
             if re.search(pattern, clean_msg):
                 reason = "Potential credential request" if "credential" in pattern or "password" in pattern else \
@@ -190,10 +205,17 @@ class GuardrailService:
 
         # 2. Platform Help Check
         is_platform_help = (
-            any(alias in clean_msg for alias in self.history_aliases) or
+            (any(alias in clean_msg for alias in self.history_aliases) and "family history" not in clean_msg) or
             any(alias in clean_msg for alias in self.assessment_aliases) or
             any(alias in clean_msg for alias in self.dashboard_aliases) or
-            any(alias in clean_msg for alias in self.workflow_aliases)
+            any(alias in clean_msg for alias in self.workflow_aliases) or
+            any(re.search(pat, clean_msg) for pat in [
+                r"start\s+.*assessment",
+                r"run\s+.*assessment",
+                r"take\s+.*assessment",
+                r"perform\s+.*assessment",
+                r"begin\s+.*assessment"
+            ])
         )
         if is_platform_help:
             return self.PLATFORM_HELP, None
@@ -227,7 +249,7 @@ class GuardrailService:
             (is_allowed: bool, rejection_reason: Optional[str])
         """
         category, reason = self.classify_message(message, user_id)
-        if category in [self.SECURITY_SENSITIVE, self.OUT_OF_SCOPE]:
+        if category in [self.PROMPT_INJECTION, self.SECURITY_SENSITIVE, self.OUT_OF_SCOPE]:
             return False, reason
         return True, None
 
