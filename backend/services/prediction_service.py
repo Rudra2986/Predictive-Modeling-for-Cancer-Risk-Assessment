@@ -94,7 +94,7 @@ def get_prediction_analytics(db: Session, user_id: Optional[int] = None) -> Dict
     
     for day, count in trend_results:
         if day:
-            date_str = day.strftime("%Y-%m-%d") if isinstance(day, (datetime, datetime.date)) or hasattr(day, "strftime") else str(day)
+            date_str = day.strftime("%Y-%m-%d") if hasattr(day, "strftime") else str(day)
             if date_str in trends:
                 trends[date_str] = count
             

@@ -1,79 +1,79 @@
 {
     "model_name": "Random Forest",
-    "weighted_f1": 0.8718051339285714,
-    "accuracy": 0.875,
+    "weighted_f1": 0.8793055555555556,
+    "accuracy": 0.885,
     "classification_report": {
         "Low": {
-            "precision": 0.7333333333333333,
-            "recall": 0.676923076923077,
-            "f1-score": 0.704,
+            "precision": 0.7818181818181819,
+            "recall": 0.6615384615384615,
+            "f1-score": 0.7166666666666667,
             "support": 65.0
         },
         "Medium": {
-            "precision": 0.9076923076923077,
-            "recall": 0.9365079365079365,
-            "f1-score": 0.921875,
+            "precision": 0.9039039039039038,
+            "recall": 0.9555555555555556,
+            "f1-score": 0.9290123456790124,
             "support": 315.0
         },
         "High": {
-            "precision": 0.7333333333333333,
-            "recall": 0.55,
-            "f1-score": 0.6285714285714286,
+            "precision": 0.8333333333333334,
+            "recall": 0.5,
+            "f1-score": 0.625,
             "support": 20.0
         },
-        "accuracy": 0.875,
+        "accuracy": 0.885,
         "macro avg": {
-            "precision": 0.7914529914529914,
-            "recall": 0.7211436711436713,
-            "f1-score": 0.7514821428571429,
+            "precision": 0.8396851396851397,
+            "recall": 0.7056980056980057,
+            "f1-score": 0.7568930041152263,
             "support": 400.0
         },
         "weighted avg": {
-            "precision": 0.8706410256410257,
-            "recall": 0.875,
-            "f1-score": 0.8718051339285714,
+            "precision": 0.8805364455364456,
+            "recall": 0.885,
+            "f1-score": 0.8793055555555556,
             "support": 400.0
         }
     },
     "confusion_matrix": [
         [
-            44,
-            21,
+            43,
+            22,
             0
         ],
         [
-            16,
-            295,
-            4
+            12,
+            301,
+            2
         ],
         [
             0,
-            9,
-            11
+            10,
+            10
         ]
     ],
     "feature_importances": {
-        "Air_Pollution": 0.18553910984775607,
-        "Alcohol_Use": 0.1254006553817628,
-        "Diet_Salted_Processed": 0.11869990190920209,
-        "Smoking": 0.11399603446908871,
-        "Diet_Red_Meat": 0.0818892725992764,
-        "Occupational_Hazards": 0.07794600346507956,
-        "Obesity": 0.06344396613881165,
-        "Fruit_Veg_Intake": 0.029266509211526997,
-        "Physical_Activity": 0.025617479608297022,
-        "Cancer_Type_Lung": 0.021105905945307788,
-        "BMI": 0.020182703385882166,
-        "Calcium_Intake": 0.02007641113117299,
-        "Age": 0.01876094002160503,
-        "Physical_Activity_Level": 0.01807930321720134,
-        "Cancer_Type_Prostate": 0.016374923541124933,
-        "Cancer_Type_Colon": 0.013327384814815586,
-        "Family_History": 0.012149309212903704,
-        "Gender": 0.010891899082607058,
-        "H_Pylori_Infection": 0.008826481307734347,
-        "Cancer_Type_Skin": 0.008665852433443907,
-        "Cancer_Type_Breast": 0.00786683948290446,
-        "BRCA_Mutation": 0.0018931137924955645
+        "Air_Pollution": 0.16713797146026715,
+        "Alcohol_Use": 0.1229201210062989,
+        "Diet_Salted_Processed": 0.10951511474023791,
+        "Smoking": 0.10718719032696855,
+        "Occupational_Hazards": 0.08113393641167363,
+        "Diet_Red_Meat": 0.08062635392494162,
+        "Obesity": 0.06547082089193637,
+        "Fruit_Veg_Intake": 0.0326787974584803,
+        "Physical_Activity": 0.030744108428830522,
+        "BMI": 0.026813998902991184,
+        "Age": 0.02467726309523988,
+        "Calcium_Intake": 0.024657268041826375,
+        "Physical_Activity_Level": 0.022830067446212403,
+        "Cancer_Type_Lung": 0.019357649237230462,
+        "Cancer_Type_Prostate": 0.01637308794502503,
+        "Family_History": 0.014233940413480665,
+        "Gender": 0.012340605765644767,
+        "Cancer_Type_Colon": 0.012117744321825724,
+        "H_Pylori_Infection": 0.009482362681767427,
+        "Cancer_Type_Skin": 0.008588055156353061,
+        "Cancer_Type_Breast": 0.008513173893869517,
+        "BRCA_Mutation": 0.0026003684488984688
     }
 }

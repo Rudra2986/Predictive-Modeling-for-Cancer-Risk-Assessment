@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OncoRisk AI V2.1 — System Architecture</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0f;
+            color: #e8e8f0;
+            min-height: 100vh;
+            overflow: auto;
+            user-select: none;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image: radial-gradient(circle at 1px 1px, #1a1a2e 1px, transparent 0);
+            background-size: 40px 40px;
+            opacity: 0.35;
+        }
+
+        .container {
+            max-width: 1820px;
+            margin: 0 auto;
+            padding: 30px 40px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #00d4aa, #4a9eff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+        }
+
+        .header .version {
+            display: inline-block;
+            margin-left: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #0a0a0f;
+            background: linear-gradient(135deg, #00d4aa, #4a9eff);
+            padding: 3px 10px;
+            border-radius: 6px;
+            vertical-align: super;
+            letter-spacing: 0.5px;
+        }
+
+        .header .subtitle {
+            font-size: 0.82rem;
+            color: #8888a8;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            font-weight: 400;
+            margin-top: 6px;
+        }
+
+        .tech-bar {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.78rem;
+            color: #666688;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .tech-bar span {
+            margin: 0 5px;
+        }
+
+        .tech-bar .sep {
+            color: #2a2a45;
+        }
+
+        /* ─── Diagram ─── */
+        .diagram-wrapper {
+            position: relative;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .diagram-canvas {
+            position: relative;
+            width: 1740px;
+            height: 1120px;
+            margin: 0 auto;
+        }
+
+        /* ─── SVG ─── */
+        .connections-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ─── Base Node ─── */
+        .node {
+            position: absolute;
+            z-index: 10;
+            cursor: grab;
+            transition: box-shadow 0.25s ease;
+        }
+
+        .node:active {
+            cursor: grabbing;
+        }
+
+        .node.dragging {
+            z-index: 100;
+            transition: none;
+        }
+
+        .node.dragging .node-card {
+            border-color: #00d4aa !important;
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.3), 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .node-card {
+            background: #14142a;
+            border: 1px solid #2a2a45;
+            border-radius: 14px;
+            padding: 16px 20px;
+            text-align: center;
+            min-width: 145px;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .node:hover .node-card {
+            border-color: rgba(0, 212, 170, 0.5);
+            box-shadow: 0 0 16px rgba(0, 212, 170, 0.15), 0 6px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .node-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 1.15rem;
+        }
+
+        .node-icon.teal {
+            background: rgba(0, 212, 170, 0.12);
+            color: #00d4aa;
+        }
+
+        .node-icon.blue {
+            background: rgba(74, 158, 255, 0.12);
+            color: #4a9eff;
+        }
+
+        .node-icon.purple {
+            background: rgba(168, 85, 247, 0.12);
+            color: #a855f7;
+        }
+
+        .node-icon.orange {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+        }
+
+        .node-icon.red {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+
+        .node-icon.green {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+
+        .node-icon.pink {
+            background: rgba(236, 72, 153, 0.12);
+            color: #ec4899;
+        }
+
+        .node-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 3px;
+            white-space: nowrap;
+        }
+
+        .node-subtitle {
+            font-size: 0.7rem;
+            color: #9999bb;
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        /* ─── Special Borders ─── */
+        .node-decision .node-card {
+            border-color: #f59e0b;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.08);
+        }
+
+        .node-success .node-card {
+            border-color: #22c55e;
+            box-shadow: 0 0 14px rgba(34, 197, 94, 0.12);
+        }
+
+        /* ─── GROUP NODE ─── */
+        .node-group .node-card {
+            text-align: left;
+            padding: 16px 20px 18px;
+            background: #111128;
+        }
+
+        .node-group .group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .node-group .group-header .node-icon {
+            margin: 0;
+            width: 34px;
+            height: 34px;
+            font-size: 1rem;
+        }
+
+        .node-group .group-header .node-title {
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .node-group .sub-items {
+            padding-left: 2px;
+        }
+
+        .node-group .sub-item {
+            font-size: 0.67rem;
+            color: #8888aa;
+            padding: 2.5px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            letter-spacing: 0.2px;
+        }
+
+        .node-group .sub-item .tree {
+            color: #3a3a55;
+            font-size: 0.72rem;
+            width: 12px;
+            flex-shrink: 0;
+        }
+
+        .node-group .sub-item.last .tree {
+            color: #3a3a55;
+        }
+
+        .node-group .group-divider {
+            height: 1px;
+            background: #2a2a45;
+            margin: 8px 0 8px 0;
+        }
+
+        .node-group .group-section-label {
+            font-size: 0.6rem;
+            color: #666688;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        /* Group accent overrides */
+        .security-accent .node-card {
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.08);
+        }
+
+        .assistant-accent .node-card {
+            border-color: #00d4aa;
+            box-shadow: 0 0 12px rgba(0, 212, 170, 0.1);
+        }
+
+        .db-accent .node-card {
+            border-color: #4a9eff;
+            box-shadow: 0 0 10px rgba(74, 158, 255, 0.08);
+        }
+
+        .session-accent .node-card {
+            border-color: #a855f7;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.08);
+        }
+
+        .feedback-accent .node-card {
+            border-color: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.08);
+        }
+
+        /* ─── SMALL NODE ─── */
+        .node-small .node-card {
+            padding: 10px 14px;
+            min-width: 110px;
+            background: #111125;
+            border-color: #222240;
+        }
+
+        .node-small .node-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .node-small .node-title {
+            font-size: 0.72rem;
+            color: #aaaacc;
+        }
+
+        .node-small .node-subtitle {
+            font-size: 0.58rem;
+            color: #666688;
+        }
+
+        /* ─── Edge Labels ─── */
+        .edge-label {
+            position: absolute;
+            z-index: 25;
+            font-size: 0.72rem;
+            color: #c0c0dd;
+            font-weight: 600;
+            background: rgba(14, 14, 28, 0.95);
+            padding: 3px 12px;
+            border-radius: 5px;
+            border: 1px solid #2a2a48;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            cursor: grab;
+        }
+
+        .edge-label:active {
+            cursor: grabbing;
+        }
+
+        .edge-label.dragging {
+            z-index: 100;
+            border-color: #4a9eff;
+            box-shadow: 0 0 12px rgba(74, 158, 255, 0.25);
+        }
+
+        .lightning {
+            color: #f59e0b;
+            font-size: 0.85rem;
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            z-index: 20;
+        }
+
+        .drag-hint {
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 0.68rem;
+            color: #444460;
+            letter-spacing: 0.5px;
+        }
+
+        .drag-hint span {
+            color: #00d4aa;
+        }
+
+        /* ─── Features Banner ─── */
+        .features-banner {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px 18px;
+            margin-top: 35px;
+            padding: 14px 30px;
+            background: rgba(0, 212, 170, 0.03);
+            border: 1px solid rgba(0, 212, 170, 0.1);
+            border-radius: 12px;
+        }
+
+        .feature-item {
+            font-size: 0.72rem;
+            color: #8888a8;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .feature-item .check {
+            color: #00d4aa;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .footnote {
+            text-align: center;
+            color: #2a2a45;
+            font-size: 0.65rem;
+            margin-top: 18px;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .fade-in:nth-child(1) {
+            animation-delay: 0.02s;
+        }
+
+        .fade-in:nth-child(2) {
+            animation-delay: 0.04s;
+        }
+
+        .fade-in:nth-child(3) {
+            animation-delay: 0.06s;
+        }
+
+        .fade-in:nth-child(4) {
+            animation-delay: 0.08s;
+        }
+
+        .fade-in:nth-child(5) {
+            animation-delay: 0.10s;
+        }
+
+        .fade-in:nth-child(6) {
+            animation-delay: 0.12s;
+        }
+
+        .fade-in:nth-child(7) {
+            animation-delay: 0.14s;
+        }
+
+        .fade-in:nth-child(8) {
+            animation-delay: 0.16s;
+        }
+
+        .fade-in:nth-child(9) {
+            animation-delay: 0.18s;
+        }
+
+        .fade-in:nth-child(10) {
+            animation-delay: 0.20s;
+        }
+
+        .fade-in:nth-child(11) {
+            animation-delay: 0.22s;
+        }
+
+        .fade-in:nth-child(12) {
+            animation-delay: 0.24s;
+        }
+
+        .fade-in:nth-child(13) {
+            animation-delay: 0.26s;
+        }
+
+        .fade-in:nth-child(14) {
+            animation-delay: 0.28s;
+        }
+
+        .fade-in:nth-child(15) {
+            animation-delay: 0.30s;
+        }
+
+        .fade-in:nth-child(16) {
+            animation-delay: 0.32s;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a45;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+
+        <!-- ═══ HEADER ═══ -->
+        <div class="header fade-in">
+            <h1>OncoRisk AI</h1><span class="version">V2.1</span>
+            <p class="subtitle">Predictive Modeling for Cancer Risk Assessment</p>
+        </div>
+        <div class="tech-bar fade-in">
+            <span>Next.js 14</span><span class="sep">·</span>
+            <span>FastAPI</span><span class="sep">·</span>
+            <span>Python 3.11</span><span class="sep">·</span>
+            <span>Scikit-learn</span><span class="sep">·</span>
+            <span>XGBoost</span><span class="sep">·</span>
+            <span>SHAP</span><span class="sep">·</span>
+            <span>Optuna</span><span class="sep">·</span>
+            <span>PostgreSQL</span><span class="sep">·</span>
+            <span>Groq / Gemini LLM</span><span class="sep">·</span>
+            <span>Docker</span>
+        </div>
+
+        <div class="drag-hint">💡 <span>Drag</span> any node or label to rearrange — arrows follow automatically. <a href="#" id="btn-reset" style="color: #4a9eff; text-decoration: none; margin-left: 10px; border-bottom: 1px dashed #4a9eff; cursor: pointer;">Reset Layout</a> | <a href="#" id="btn-download" style="color: #00d4aa; text-decoration: none; margin-left: 10px; border-bottom: 1px dashed #00d4aa; cursor: pointer; font-weight: 600;">Download Graph (HD PNG)</a></div>
+
+        <!-- ═══ DIAGRAM ═══ -->
+        <div class="diagram-wrapper">
+            <div class="diagram-canvas" id="canvas">
+
+                <svg class="connections-svg" id="svg">
+                    <defs>
+                        <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"
+                            markerUnits="userSpaceOnUse">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#2d6b5e" />
+                        </marker>
+                    </defs>
+                </svg>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  COLUMN 1 — ENTRY POINTS                              -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node fade-in" id="n-browser" style="left: 30px; top: 220px;">
+                    <span class="lightning">⚡</span>
+                    <div class="node-card">
+                        <div class="node-icon blue">🌐</div>
+                        <div class="node-title">Authenticated User</div>
+                        <div class="node-subtitle">trigger: web UI</div>
+                    </div>
+                </div>
+
+                <div class="node fade-in" id="n-guest" style="left: 30px; top: 420px;">
+                    <div class="node-card">
+                        <div class="node-icon purple">👤</div>
+                        <div class="node-title">Public Visitor</div>
+                        <div class="node-subtitle">trigger: no auth</div>
+                    </div>
+                </div>
+
+                <div class="node fade-in" id="n-admin" style="left: 30px; top: 620px;">
+                    <div class="node-card">
+                        <div class="node-icon orange">🔑</div>
+                        <div class="node-title">Admin Panel</div>
+                        <div class="node-subtitle">trigger: admin JWT</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  COLUMN 2 — FRONTEND                                  -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node fade-in" id="n-frontend" style="left: 150px; top: 420px;">
+                    <div class="node-card">
+                        <div class="node-icon teal">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+                                <line x1="12" y1="22" x2="12" y2="15.5" />
+                                <polyline points="22 8.5 12 15.5 2 8.5" />
+                            </svg>
+                        </div>
+                        <div class="node-title">Next.js Frontend</div>
+                        <div class="node-subtitle">React 18 · App Router</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  COLUMN 3 — SECURITY LAYER (GROUP)                    -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node node-group security-accent fade-in" id="n-security" style="left: 260px; top: 320px;">
+                    <div class="node-card">
+                        <div class="group-header">
+                            <div class="node-icon red">🛡️</div>
+                            <div class="node-title">Security Layer</div>
+                        </div>
+                        <div class="sub-items">
+                            <div class="sub-item"><span class="tree">├</span> JWT Authentication</div>
+                            <div class="sub-item"><span class="tree">├</span> Prompt Injection Guard</div>
+                            <div class="sub-item"><span class="tree">├</span> RBAC Authorization</div>
+                            <div class="sub-item"><span class="tree">├</span> Session Ownership</div>
+                            <div class="sub-item last"><span class="tree">└</span> Input Validation</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  COLUMN 4 — FASTAPI ROUTER                            -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node node-decision fade-in" id="n-fastapi" style="left: 400px; top: 400px;">
+                    <div class="node-card">
+                        <div class="node-icon orange">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                            </svg>
+                        </div>
+                        <div class="node-title">FastAPI Router</div>
+                        <div class="node-subtitle">route decision</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  TOP BRANCH — PREDICTION PATH                         -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node fade-in" id="n-mlpipeline" style="left: 540px; top: 130px;">
+                    <div class="node-card">
+                        <div class="node-icon green">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                            </svg>
+                        </div>
+                        <div class="node-title">ML Pipeline</div>
+                        <div class="node-subtitle">RF + XGBoost + SMOTE</div>
+                    </div>
+                </div>
+
+                <div class="node fade-in" id="n-shap" style="left: 740px; top: 130px;">
+                    <div class="node-card">
+                        <div class="node-icon purple">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                        </div>
+                        <div class="node-title">SHAP Explainer</div>
+                        <div class="node-subtitle">explainability / XAI</div>
+                    </div>
+                </div>
+
+                <div class="node node-success fade-in" id="n-result" style="left: 960px; top: 130px;">
+                    <div class="node-card">
+                        <div class="node-icon green" style="font-size: 1.3rem;">✓</div>
+                        <div class="node-title">Risk Report</div>
+                        <div class="node-subtitle">Low / Medium / High</div>
+                    </div>
+                </div>
+
+                <!-- Risk Explanation bridge node -->
+                <div class="node node-small fade-in" id="n-riskexplain" style="left: 755px; top: 260px;">
+                    <div class="node-card">
+                        <div class="node-icon teal" style="width:26px;height:26px;font-size:0.75rem;">📊</div>
+                        <div class="node-title">Risk Explanation</div>
+                        <div class="node-subtitle">narrative agent</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  MIDDLE BRANCH — AI ASSISTANT (LARGE GROUP)           -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node node-group assistant-accent fade-in" id="n-assistant" style="left: 560px; top: 330px;">
+                    <div class="node-card">
+                        <div class="group-header">
+                            <div class="node-icon teal">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                </svg>
+                            </div>
+                            <div class="node-title">AI Assistant Core</div>
+                        </div>
+                        <div class="group-section-label">Orchestration Services</div>
+                        <div class="sub-items">
+                            <div class="sub-item"><span class="tree">├</span> Prompt Security</div>
+                            <div class="sub-item"><span class="tree">├</span> Guardrail Service</div>
+                            <div class="sub-item"><span class="tree">├</span> Intent Classifier</div>
+                            <div class="sub-item"><span class="tree">├</span> Context Memory</div>
+                            <div class="sub-item"><span class="tree">├</span> Citation Engine</div>
+                            <div class="sub-item"><span class="tree">├</span> Trend Analysis</div>
+                            <div class="sub-item last"><span class="tree">└</span> Confidence Engine</div>
+                        </div>
+                        <div class="group-divider"></div>
+                        <div class="group-section-label">Intent Routes</div>
+                        <div class="sub-items">
+                            <div class="sub-item"><span class="tree">├</span> Platform Help</div>
+                            <div class="sub-item"><span class="tree">├</span> Assessment Guidance</div>
+                            <div class="sub-item"><span class="tree">├</span> Medical Query</div>
+                            <div class="sub-item"><span class="tree">├</span> Health Education</div>
+                            <div class="sub-item last"><span class="tree">└</span> Security Sensitive</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  EXTERNAL LLM                                         -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node fade-in" id="n-llm" style="left: 740px; top: 620px;">
+                    <div class="node-card" style="border-style: dashed; border-color: #2a4a45;">
+                        <div class="node-icon teal" style="font-weight: 800; font-size: 0.65rem; letter-spacing: 1px;">
+                            LLM</div>
+                        <div class="node-title">Groq / Gemini</div>
+                        <div class="node-subtitle">optional · external</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  OUTPUTS — AI RESPONSE + FEEDBACK                     -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="node node-success fade-in" id="n-airesponse" style="left: 960px; top: 450px;">
+                    <div class="node-card">
+                        <div class="node-icon green" style="font-size: 1.3rem;">💬</div>
+                        <div class="node-title">AI Response</div>
+                        <div class="node-subtitle">guidance / advice</div>
+                    </div>
+                </div>
+
+                <div class="node node-group feedback-accent fade-in" id="n-feedback" style="left: 770px; top: 920px;">
+                    <div class="node-card">
+                        <div class="group-header">
+                            <div class="node-icon orange" style="width:30px;height:30px;font-size:0.9rem;">📝</div>
+                            <div class="node-title" style="font-size:0.82rem;">Feedback System</div>
+                        </div>
+                        <div class="sub-items">
+                            <div class="sub-item"><span class="tree">├</span> 👍 Helpful</div>
+                            <div class="sub-item last"><span class="tree">└</span> 👎 Not Helpful</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  BOTTOM — DATA LAYER                                  -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+
+                <!-- PostgreSQL (GROUP) -->
+                <div class="node node-group db-accent fade-in" id="n-postgres" style="left: 385px; top: 850px;">
+                    <div class="node-card">
+                        <div class="group-header">
+                            <div class="node-icon blue">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                                </svg>
+                            </div>
+                            <div class="node-title">PostgreSQL</div>
+                        </div>
+                        <div class="sub-items">
+                            <div class="sub-item"><span class="tree">├</span> Users</div>
+                            <div class="sub-item"><span class="tree">├</span> Prediction History</div>
+                            <div class="sub-item"><span class="tree">├</span> Chat Sessions</div>
+                            <div class="sub-item"><span class="tree">├</span> Chat Messages</div>
+                            <div class="sub-item"><span class="tree">├</span> Assessments </div>
+                            <div class="sub-item last"><span class="tree">└</span> Feedback</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Manager (GROUP) -->
+                <div class="node node-group session-accent fade-in" id="n-session" style="left: 560px; top: 810px;">
+                    <div class="node-card">
+                        <div class="group-header">
+                            <div class="node-icon purple">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                    <line x1="8" y1="21" x2="16" y2="21" />
+                                    <line x1="12" y1="17" x2="12" y2="21" />
+                                </svg>
+                            </div>
+                            <div class="node-title">Session Manager</div>
+                        </div>
+                        <div class="sub-items">
+                            <div class="sub-item"><span class="tree">├</span> Persistent Sessions</div>
+                            <div class="sub-item"><span class="tree">├</span> Auto Session Titles</div>
+                            <div class="sub-item"><span class="tree">├</span> Chat History</div>
+                            <div class="sub-item"><span class="tree">├</span> Soft Delete</div>
+                            <div class="sub-item last"><span class="tree">└</span> User Isolation</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Retrain Engine (SMALL) -->
+                <div class="node node-small fade-in" id="n-retrain" style="left: 400px; top: 180px;">
+                    <div class="node-card">
+                        <div class="node-icon orange" style="width:26px;height:26px;font-size:0.75rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                        </div>
+                        <div class="node-title">Retrain Engine</div>
+                        <div class="node-subtitle">Optuna HPO</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!--  EDGE LABELS                                          -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <div class="edge-label" id="lbl-1" style="left: 490px; top: 250px;">predict</div>
+                <div class="edge-label" id="lbl-2" style="left: 500px; top: 410px;">chat</div>
+                <div class="edge-label" id="lbl-3" style="left: 670px; top: 150px;">SHAP</div>
+                <div class="edge-label" id="lbl-4" style="left: 880px; top: 150px;">result</div>
+                <div class="edge-label" id="lbl-5" style="left: 770px; top: 220px;">explanation</div>
+                <div class="edge-label" id="lbl-6" style="left: 680px; top: 580px;">LLM inference</div>
+                <div class="edge-label" id="lbl-7" style="left: 790px; top: 450px;">response</div>
+                <div class="edge-label" id="lbl-8" style="left: 890px; top: 770px;">feedback</div>
+                <div class="edge-label" id="lbl-9" style="left: 410px; top: 260px;">ORM</div>
+                <div class="edge-label" id="lbl-10" style="left: 365px; top: 770px;">retrain</div>
+
+            </div>
+        </div>
+
+        <!-- ═══ V2.1 FEATURES BANNER ═══ -->
+        <div class="features-banner">
+            <div class="feature-item"><span class="check">✓</span> Cancer Risk Prediction</div>
+            <div class="feature-item"><span class="check">✓</span> SHAP Explainability</div>
+            <div class="feature-item"><span class="check">✓</span> Secure AI Assistant</div>
+            <div class="feature-item"><span class="check">✓</span> Session Management</div>
+            <div class="feature-item"><span class="check">✓</span> Trend Analysis</div>
+            <div class="feature-item"><span class="check">✓</span> Feedback System</div>
+            <div class="feature-item"><span class="check">✓</span> Prompt Injection Protection</div>
+            <div class="feature-item"><span class="check">✓</span> JWT Authentication</div>
+            <div class="feature-item"><span class="check">✓</span> Cloud Deployment</div>
+        </div>
+
+        <p class="footnote">OncoRisk AI V2.1 — Production Architecture</p>
+    </div>
+
+    <!-- html-to-image library for exporting high-quality diagram -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <script>
+        const CONNECTIONS = [
+            // Entry → Frontend
+            ['n-browser', 'n-frontend'],
+            ['n-guest', 'n-frontend'],
+            ['n-admin', 'n-frontend'],
+            // Frontend → Security → FastAPI
+            ['n-frontend', 'n-security'],
+            ['n-security', 'n-fastapi'],
+            // FastAPI branches
+            ['n-fastapi', 'n-mlpipeline'],    // predict
+            ['n-fastapi', 'n-assistant'],     // chat
+            ['n-fastapi', 'n-postgres'],      // ORM
+            ['n-fastapi', 'n-retrain'],       // retrain (small)
+            // Prediction path
+            ['n-mlpipeline', 'n-shap'],
+            ['n-shap', 'n-result'],
+            // SHAP → Explanation → AI Assistant
+            ['n-shap', 'n-riskexplain'],
+            ['n-riskexplain', 'n-assistant'],
+            // AI Assistant → outputs
+            ['n-assistant', 'n-llm'],
+            ['n-assistant', 'n-airesponse'],
+            ['n-airesponse', 'n-feedback'],
+            // AI Assistant → Session Manager
+            ['n-assistant', 'n-session'],
+            // Feedback → PostgreSQL
+            ['n-feedback', 'n-postgres'],
+            // Session → PostgreSQL
+            ['n-session', 'n-postgres'],
+            // Retrain → ML Pipeline (model update)
+            ['n-retrain', 'n-mlpipeline'],
+        ];
+
+        const ARROW_COLOR = '#2d6b5e';
+        const ARROW_W = 1.8;
+
+        function drawConnections() {
+            const svg = document.getElementById('svg');
+            const defs = svg.querySelector('defs');
+            svg.innerHTML = '';
+            svg.appendChild(defs);
+
+            CONNECTIONS.forEach(([fId, tId]) => {
+                const f = document.getElementById(fId);
+                const t = document.getElementById(tId);
+                if (!f || !t) return;
+
+                const fc = { x: f.offsetLeft + f.offsetWidth / 2, y: f.offsetTop + f.offsetHeight / 2 };
+                const tc = { x: t.offsetLeft + t.offsetWidth / 2, y: t.offsetTop + t.offsetHeight / 2 };
+                const dx = tc.x - fc.x, dy = tc.y - fc.y;
+
+                let x1, y1, x2, y2;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    x1 = dx > 0 ? f.offsetLeft + f.offsetWidth : f.offsetLeft;
+                    x2 = dx > 0 ? t.offsetLeft : t.offsetLeft + t.offsetWidth;
+                    y1 = fc.y; y2 = tc.y;
+                } else {
+                    y1 = dy > 0 ? f.offsetTop + f.offsetHeight : f.offsetTop;
+                    y2 = dy > 0 ? t.offsetTop : t.offsetTop + t.offsetHeight;
+                    x1 = fc.x; x2 = tc.x;
+                }
+
+                const adx = Math.abs(x2 - x1), ady = Math.abs(y2 - y1);
+                let d;
+                if (adx > ady) {
+                    const c = adx * 0.35;
+                    d = `M${x1} ${y1} C${x1 + Math.sign(dx) * c} ${y1},${x2 - Math.sign(dx) * c} ${y2},${x2} ${y2}`;
+                } else {
+                    const c = ady * 0.35;
+                    d = `M${x1} ${y1} C${x1} ${y1 + Math.sign(dy) * c},${x2} ${y2 - Math.sign(dy) * c},${x2} ${y2}`;
+                }
+
+                const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                p.setAttribute('d', d);
+                p.setAttribute('fill', 'none');
+                p.setAttribute('stroke', ARROW_COLOR);
+                p.setAttribute('stroke-width', ARROW_W);
+                p.setAttribute('marker-end', 'url(#arrow)');
+                svg.appendChild(p);
+            });
+        }
+
+        /* ─── Drag & Drop ─── */
+        let drag = null, ox = 0, oy = 0;
+
+        // Load positions from localStorage if they exist
+        function loadPositions() {
+            try {
+                const saved = localStorage.getItem('oncorisk_layout_v3');
+                if (saved) {
+                    const positions = JSON.parse(saved);
+                    for (const id in positions) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.style.left = positions[id].left;
+                            el.style.top = positions[id].top;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading positions:', e);
+            }
+        }
+
+        // Save positions to localStorage
+        function savePositions() {
+            try {
+                const positions = {};
+                document.querySelectorAll('.node, .edge-label').forEach(el => {
+                    positions[el.id] = {
+                        left: el.style.left,
+                        top: el.style.top
+                    };
+                });
+                localStorage.setItem('oncorisk_layout_v3', JSON.stringify(positions));
+                console.log("Layout saved to localStorage! To update HTML code default positions, use this:", positions);
+            } catch (e) {
+                console.error('Error saving positions:', e);
+            }
+        }
+
+        function onDown(e) {
+            const el = e.target.closest('.node, .edge-label');
+            if (!el) return;
+            e.preventDefault();
+            drag = el;
+            drag.classList.add('dragging');
+            const r = drag.getBoundingClientRect();
+            ox = e.clientX - r.left;
+            oy = e.clientY - r.top;
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+        }
+
+        function onMove(e) {
+            if (!drag) return;
+            const c = document.getElementById('canvas');
+            const cr = c.getBoundingClientRect();
+            let nl = e.clientX - cr.left - ox;
+            let nt = e.clientY - cr.top - oy;
+            nl = Math.max(0, Math.min(nl, c.offsetWidth - drag.offsetWidth));
+            nt = Math.max(0, Math.min(nt, c.offsetHeight - drag.offsetHeight));
+            drag.style.left = nl + 'px';
+            drag.style.top = nt + 'px';
+            drawConnections();
+        }
+
+        function onUp() {
+            if (drag) {
+                drag.classList.remove('dragging');
+                drag = null;
+                savePositions();
+            }
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+        }
+
+        document.getElementById('canvas').addEventListener('pointerdown', onDown);
+        document.getElementById('btn-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('oncorisk_layout_v3');
+            location.reload();
+        });
+        document.getElementById('btn-download').addEventListener('click', (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-download');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Generating HD PNG...';
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+
+            // Create temporary title element to overlay on canvas for download
+            const titleEl = document.createElement('div');
+            titleEl.innerHTML = `
+                <h1 style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #00d4aa, #4a9eff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; display: inline-block; letter-spacing: -0.5px;">OncoRisk AI</h1>
+                <span style="font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; color: #0a0a0f; background: linear-gradient(135deg, #00d4aa, #4a9eff); padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: super; letter-spacing: 0.5px;">V2.1</span>
+                <p style="font-family: 'Inter', sans-serif; font-size: 10px; color: #8888a8; letter-spacing: 1.5px; text-transform: uppercase; margin: 4px 0 0 0; font-weight: 500; text-align: center;">Predictive Modeling for Cancer Risk Assessment</p>
+            `;
+            titleEl.style.position = 'absolute';
+            titleEl.style.top = '30px';
+            titleEl.style.left = '50%';
+            titleEl.style.transform = 'translateX(-50%)';
+            titleEl.style.textAlign = 'center';
+            titleEl.style.zIndex = '9999';
+            document.getElementById('canvas').appendChild(titleEl);
+
+            // Ensure connections are updated and canvas exports nicely
+            htmlToImage.toPng(document.getElementById('canvas'), {
+                width: 1740,
+                height: 1120,
+                style: {
+                    background: '#0a0a0f radial-gradient(circle at 1px 1px, rgba(26, 26, 46, 0.35) 1px, transparent 0)',
+                    backgroundSize: '40px 40px',
+                    transform: 'scale(1)',
+                    transformOrigin: 'top left'
+                }
+            })
+            .then((dataUrl) => {
+                const link = document.createElement('a');
+                link.download = 'oncorisk-ai-architecture.png';
+                link.href = dataUrl;
+                link.click();
+                
+                titleEl.remove();
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            })
+            .catch((error) => {
+                console.error('Error generating image:', error);
+                alert('Could not download image. Please try again.');
+                titleEl.remove();
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            });
+        });
+        window.addEventListener('load', () => {
+            loadPositions();
+            setTimeout(drawConnections, 80);
+        });
+        window.addEventListener('resize', drawConnections);
+    </script>
+</body>
+
+</html>
