@@ -89,6 +89,7 @@ def health_check():
     from backend.database.session import SessionLocal
 
     db_status = "connected"
+    database_connected = True
     try:
         db = SessionLocal()
         db.execute(text("SELECT 1"))
@@ -96,19 +97,26 @@ def health_check():
     except Exception as e:
         logger.error(f"Health check database connection test failed: {e}")
         db_status = "disconnected"
+        database_connected = False
         
     ml_model_status = "loaded" if predict.best_model is not None else "failed"
     explainer_status = "loaded" if predict.explainer is not None else "failed"
     
+    with predict.model_loading_lock:
+        model_ready = predict.model_ready
+    
     overall_status = "healthy"
-    if db_status == "disconnected" or ml_model_status == "failed" or explainer_status == "failed":
+    if not database_connected or not model_ready:
         overall_status = "degraded"
         
     return {
         "status": overall_status,
+        "service": "OncoRisk AI",
         "database": db_status,
+        "database_connected": database_connected,
         "ml_model": ml_model_status,
         "explainer": explainer_status,
+        "model_ready": model_ready,
         "version": settings.VERSION
     }
 

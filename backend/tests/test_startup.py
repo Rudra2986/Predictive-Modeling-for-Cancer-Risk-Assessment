@@ -83,3 +83,41 @@ def test_cache_thread_safety():
         t.join()
 
     assert len(errors) == 0
+
+
+def test_health_endpoint_metadata():
+    """
+    Verify the health check endpoint returns service metadata, database status, 
+    and thread-safe model readiness.
+    """
+    # 1. Verify standard healthy response structure
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["service"] == "OncoRisk AI"
+    assert "database_connected" in data
+    assert isinstance(data["database_connected"], bool)
+    assert "model_ready" in data
+    assert isinstance(data["model_ready"], bool)
+    
+    # 2. Simulate model loading/initializing state
+    with predict.model_loading_lock:
+        original_state = predict.model_ready
+        predict.model_ready = False
+        
+    try:
+        response = client.get("/api/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "degraded"
+        assert data["model_ready"] is False
+    finally:
+        with predict.model_loading_lock:
+            predict.model_ready = original_state
+            
+    # 3. Verify restore state works
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy" if original_state else "degraded"
+    assert data["model_ready"] == original_state
