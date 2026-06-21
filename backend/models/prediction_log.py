@@ -13,7 +13,7 @@ class PredictionLog(Base):
     explanation_narrative = Column(Text, nullable=False)
     
     # Associated user who ran the prediction (nullable to allow guest queries)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     owner = relationship("User", back_populates="prediction_logs")

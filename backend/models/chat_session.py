@@ -8,7 +8,7 @@ class ChatSession(Base):
     __tablename__ = "chat_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_uuid = Column(String(50), unique=True, index=True, nullable=False, default=lambda: str(uuid.uuid4()))
     title = Column(String(255), nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
