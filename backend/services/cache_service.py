@@ -1,5 +1,6 @@
 import hashlib
 import time
+import threading
 from collections import OrderedDict
 from typing import Optional, Dict, Any
 
@@ -7,6 +8,7 @@ class CacheService:
     def __init__(self, max_size: int = 1000, ttl_seconds: int = 86400):
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
+        self._lock = threading.Lock()
         # In-memory LRU cache dictionary: key -> {"value": dict, "timestamp": float}
         self._cache: OrderedDict = OrderedDict()
         
@@ -90,16 +92,17 @@ class CacheService:
 
         key = self._generate_key(question, context_hash)
         
-        if key in self._cache:
-            entry = self._cache[key]
-            now = time.time()
-            if now - entry["timestamp"] < self.ttl_seconds:
-                # Move to end (LRU hit)
-                self._cache.move_to_end(key)
-                return entry["value"]
-            else:
-                # Expired key
-                del self._cache[key]
+        with self._lock:
+            if key in self._cache:
+                entry = self._cache[key]
+                now = time.time()
+                if now - entry["timestamp"] < self.ttl_seconds:
+                    # Move to end (LRU hit)
+                    self._cache.move_to_end(key)
+                    return entry["value"]
+                else:
+                    # Expired key
+                    del self._cache[key]
         return None
 
     def set(self, question: str, context_hash: str, intent: str, value: Dict[str, Any]) -> None:
@@ -115,21 +118,23 @@ class CacheService:
         key = self._generate_key(question, context_hash)
         now = time.time()
         
-        # Evict oldest if limit reached and key is new
-        if key in self._cache:
-            del self._cache[key]
-        elif len(self._cache) >= self.max_size:
-            self._cache.popitem(last=False) # pop oldest key (first item)
+        with self._lock:
+            # Evict oldest if limit reached and key is new
+            if key in self._cache:
+                del self._cache[key]
+            elif len(self._cache) >= self.max_size:
+                self._cache.popitem(last=False) # pop oldest key (first item)
 
-        self._cache[key] = {
-            "value": value,
-            "timestamp": now
-        }
+            self._cache[key] = {
+                "value": value,
+                "timestamp": now
+            }
 
     def clear(self) -> None:
         """
         Clears the cache content.
         """
-        self._cache.clear()
+        with self._lock:
+            self._cache.clear()
 
 cache_service = CacheService()

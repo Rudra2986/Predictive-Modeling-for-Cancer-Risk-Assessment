@@ -1,4 +1,5 @@
 import time
+import threading
 from typing import Dict, List
 from fastapi import HTTPException, status
 
@@ -6,6 +7,7 @@ class RateLimiterService:
     def __init__(self, limit: int = 20, window_seconds: int = 60):
         self.limit = limit
         self.window_seconds = window_seconds
+        self._lock = threading.Lock()
         # In-memory store: user_id -> list of request timestamps
         self._requests: Dict[int, List[float]] = {}
 
@@ -16,23 +18,24 @@ class RateLimiterService:
         """
         now = time.time()
         
-        if user_id not in self._requests:
-            self._requests[user_id] = [now]
-            return
+        with self._lock:
+            if user_id not in self._requests:
+                self._requests[user_id] = [now]
+                return
+                
+            # Filter out timestamps older than the sliding window
+            cutoff = now - self.window_seconds
+            self._requests[user_id] = [t for t in self._requests[user_id] if t > cutoff]
             
-        # Filter out timestamps older than the sliding window
-        cutoff = now - self.window_seconds
-        self._requests[user_id] = [t for t in self._requests[user_id] if t > cutoff]
-        
-        # Check quota limit
-        if len(self._requests[user_id]) >= self.limit:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Too many requests. Please wait a minute before sending another message."
-            )
-            
-        # Record this successful request
-        self._requests[user_id].append(now)
+            # Check quota limit
+            if len(self._requests[user_id]) >= self.limit:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="Too many requests. Please wait a minute before sending another message."
+                )
+                
+            # Record this successful request
+            self._requests[user_id].append(now)
 
 # Instantiate global service instance
 rate_limiter = RateLimiterService()
