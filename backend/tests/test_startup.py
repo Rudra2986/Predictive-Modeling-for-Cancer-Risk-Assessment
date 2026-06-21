@@ -121,3 +121,13 @@ def test_health_endpoint_metadata():
     data = response.json()
     assert data["status"] == "healthy" if original_state else "degraded"
     assert data["model_ready"] == original_state
+
+
+def test_health_endpoint_head():
+    """
+    Verify the HEAD method on health check returns HTTP 200 with an empty body,
+    without executing database or model readiness logic.
+    """
+    response = client.head("/api/health")
+    assert response.status_code == 200
+    assert response.text == ""

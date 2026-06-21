@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI, Request, Response, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -82,6 +82,10 @@ app.include_router(chatbot.router, prefix="/api")
 @app.get("/")
 def read_root():
     return {"status": "healthy", "service": settings.PROJECT_NAME}
+
+@app.head("/api/health")
+def health_check_head():
+    return Response(status_code=200)
 
 @app.get("/api/health")
 def health_check():
