@@ -45,19 +45,23 @@ def get_prediction_analytics(db: Session, user_id: Optional[int] = None) -> Dict
     if user_id is not None:
         query = query.filter(PredictionLog.user_id == user_id)
         
-    logs = query.order_by(PredictionLog.created_at.desc()).all()
-    total_assessments = len(logs)
+    total_assessments = query.count()
     
-    # 1. Compute risk distributions
+    # 1. Compute risk distributions using SQL aggregation
+    dist_query = db.query(PredictionLog.predicted_class, func.count(PredictionLog.id))
+    if user_id is not None:
+        dist_query = dist_query.filter(PredictionLog.user_id == user_id)
+    dist_results = dist_query.group_by(PredictionLog.predicted_class).all()
+    
     distribution = {"Low": 0, "Medium": 0, "High": 0}
-    for log in logs:
-        cls = log.predicted_class
+    for cls, count in dist_results:
         if cls in distribution:
-            distribution[cls] += 1
+            distribution[cls] = count
             
-    # 2. Extract recent runs summary list
+    # 2. Extract recent runs summary list using LIMIT
+    recent_logs = query.order_by(PredictionLog.created_at.desc()).limit(10).all()
     recent_runs = []
-    for log in logs[:10]:
+    for log in recent_logs:
         recent_runs.append({
             "id": log.id,
             "cancer_type": log.patient_data.get("Cancer_Type", "Unknown"),
@@ -70,13 +74,19 @@ def get_prediction_analytics(db: Session, user_id: Optional[int] = None) -> Dict
     # 3. Trends over time (last 7 days query volumes)
     # Generate calendar mappings
     today = datetime.now(timezone.utc).date()
+    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
     trends = {}
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
         trends[day.strftime("%Y-%m-%d")] = 0
         
-    for log in logs:
-        log_date_str = log.created_at.strftime("%Y-%m-%d")
+    # Query only created_at timestamps for the last 7 days
+    trend_query = db.query(PredictionLog.created_at).filter(PredictionLog.created_at >= cutoff)
+    if user_id is not None:
+        trend_query = trend_query.filter(PredictionLog.user_id == user_id)
+        
+    for (created_at,) in trend_query.all():
+        log_date_str = created_at.strftime("%Y-%m-%d")
         if log_date_str in trends:
             trends[log_date_str] += 1
             
