@@ -83,12 +83,11 @@ app.include_router(chatbot.router, prefix="/api")
 def read_root():
     return {"status": "healthy", "service": settings.PROJECT_NAME}
 
-@app.head("/api/health")
-def health_check_head():
-    return Response(status_code=200)
+@app.api_route("/api/health", methods=["GET", "HEAD"])
+def health_check(request: Request):
+    if request.method == "HEAD":
+        return Response(status_code=200)
 
-@app.get("/api/health")
-def health_check():
     from sqlalchemy import text
     from backend.database.session import SessionLocal
 
