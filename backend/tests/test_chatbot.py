@@ -13,6 +13,14 @@ from backend.services.rate_limiter_service import rate_limiter
 client = TestClient(app)
 
 def test_chatbot_endpoints():
+    import time
+    import backend.api.predict as predict
+    for _ in range(600):
+        with predict.model_loading_lock:
+            if predict.model_ready:
+                break
+        time.sleep(0.1)
+
     # Set high rate limit for testing to prevent 429 errors
     rate_limiter.limit = 100
     db = SessionLocal()

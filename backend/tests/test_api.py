@@ -30,6 +30,14 @@ def test_api_workflow():
     Verify full user registration, authentication, ML prediction,
     and history/analytics endpoints flow.
     """
+    import time
+    import backend.api.predict as predict
+    for _ in range(600):
+        with predict.model_loading_lock:
+            if predict.model_ready:
+                break
+        time.sleep(0.1)
+        
     db = SessionLocal()
     
     # 1. Clean up any previous test user

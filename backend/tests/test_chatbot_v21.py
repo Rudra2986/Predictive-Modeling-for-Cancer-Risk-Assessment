@@ -33,6 +33,14 @@ def test_setup():
     db.close()
 
 def test_chatbot_v21_pipeline(test_setup):
+    import time
+    import backend.api.predict as predict
+    for _ in range(600):
+        with predict.model_loading_lock:
+            if predict.model_ready:
+                break
+        time.sleep(0.1)
+
     db = SessionLocal()
     
     # 1. Register and Login User A

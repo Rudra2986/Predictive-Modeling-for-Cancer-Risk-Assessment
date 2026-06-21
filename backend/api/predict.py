@@ -23,16 +23,20 @@ MODEL_DIR = os.path.join("backend", "ml", "saved_models")
 MODEL_PATH = os.path.join(MODEL_DIR, "best_model.joblib")
 PREPROCESSOR_PATH = os.path.join(MODEL_DIR, "preprocessor.joblib")
 
+import threading
+
 # Global model references loaded at startup
 best_model = None
 preprocessor = None
 explainer = None
+model_ready = False
+model_loading_lock = threading.Lock()
 
 # Guard to prevent infinite retraining loops per startup cycle
 _retrain_attempted = False
 
 def init_ml_models():
-    global best_model, preprocessor, explainer, _retrain_attempted
+    global best_model, preprocessor, explainer, model_ready, _retrain_attempted
     
     logger.info("Initializing ML models...")
     retrain_needed = False
@@ -46,18 +50,25 @@ def init_ml_models():
     else:
         # 2. Try to load existing model files
         try:
-            best_model = joblib.load(MODEL_PATH)
-            preprocessor = joblib.load(PREPROCESSOR_PATH)
+            loaded_model = joblib.load(MODEL_PATH)
+            loaded_preprocessor = joblib.load(PREPROCESSOR_PATH)
             # Pass pre-loaded instances to explainer to avoid reloading
-            explainer = OncoRiskExplainer(model=best_model, preprocessor=preprocessor)
+            loaded_explainer = OncoRiskExplainer(model=loaded_model, preprocessor=loaded_preprocessor)
+            with model_loading_lock:
+                best_model = loaded_model
+                preprocessor = loaded_preprocessor
+                explainer = loaded_explainer
+                model_ready = True
             logger.info("REST API: Loaded machine learning model and preprocessor successfully.")
         except Exception as e:
             retrain_needed = True
             retrain_reason = f"Model artifacts could not be loaded safely: {e}"
             logger.warning(f"{retrain_reason}. Triggering automatic retraining...")
-            best_model = None
-            preprocessor = None
-            explainer = None
+            with model_loading_lock:
+                best_model = None
+                preprocessor = None
+                explainer = None
+                model_ready = False
 
     # 3. Automatically retrain if needed
     if retrain_needed:
@@ -76,20 +87,27 @@ def init_ml_models():
             logger.info("Automatic model retraining completed. Reloading fresh artifacts...")
             
             # Reload fresh artifacts
-            best_model = joblib.load(MODEL_PATH)
-            preprocessor = joblib.load(PREPROCESSOR_PATH)
-            explainer = OncoRiskExplainer(model=best_model, preprocessor=preprocessor)
+            loaded_model = joblib.load(MODEL_PATH)
+            loaded_preprocessor = joblib.load(PREPROCESSOR_PATH)
+            loaded_explainer = OncoRiskExplainer(model=loaded_model, preprocessor=loaded_preprocessor)
+            with model_loading_lock:
+                best_model = loaded_model
+                preprocessor = loaded_preprocessor
+                explainer = loaded_explainer
+                model_ready = True
             
             logger.info(f"REST API: Fresh model and preprocessor loaded successfully from paths: {MODEL_PATH}, {PREPROCESSOR_PATH}")
         except Exception as retrain_error:
             logger.error(f"REST API Critical Error: Automatic model retraining failed: {retrain_error}", exc_info=True)
             # Ensure the backend never crashes: keep them as None and let uvicorn startup continue
-            best_model = None
-            preprocessor = None
-            explainer = None
+            with model_loading_lock:
+                best_model = None
+                preprocessor = None
+                explainer = None
+                model_ready = False
 
-# Trigger loading on module import
-init_ml_models()
+# Trigger loading in a background thread on module import to prevent blocking startup
+threading.Thread(target=init_ml_models, daemon=True).start()
 
 # Class index to label mapping
 IDX_TO_LABEL = {0: "Low", 1: "Medium", 2: "High"}
@@ -152,10 +170,13 @@ def predict_cancer_risk(
     Perform a machine learning assessment of cancer risk for a patient profile.
     Saves prediction metadata to database. Supports authenticated and guest users.
     """
-    if not best_model or not preprocessor or not explainer:
+    with model_loading_lock:
+        is_ready = model_ready
+
+    if not is_ready:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="ML model is unavailable. Retraining may still be in progress."
+            detail="ML model is currently initializing. Please try again shortly."
         )
     
     # Extract features dict
