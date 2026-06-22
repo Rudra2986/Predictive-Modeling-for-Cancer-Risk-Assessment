@@ -50,6 +50,9 @@ The platform is designed around a decoupled client-server architecture:
 
 - **Asynchronous Predictions**: Predictive risk inferences using Random Forest and XGBoost ensemble model pipelines.
 - **Explainable AI (SHAP)**: Dynamic mathematical explanation using SHAP (SHapley Additive exPlanations) values to identify risk drivers and protective factors per patient profile, with a static fallback rule-based system.
+- **Conversational AI Assistant (Chatbot)**: A patient assistant allowing conversational query of risk assessment parameters, explanation breakdown, platform help, and health guidance with full context history, safety guardrails, and caching support.
+- **Source Citations & Recommendations**: Chatbot responses include medical citations and actionable recommendations based on patient classification.
+- **Feedback Loop**: Users can submit votes (HELPFUL/NOT_HELPFUL) on chatbot responses to persist user feedback in the database.
 - **Self-Healing ML Infrastructure**: Self-healing server startup that automatically runs a fast hyperparameter tuning search (n_trials=5) and trains compatible models if joblib files are missing or serialized with incompatible dependencies.
 - **Live Retraining Engine**: Admin-controlled Optuna optimization dashboard to retrain models and select the best model based on weighted F1 metrics.
 - **Robust Security Model**: Password hashing using `bcrypt`, stateless `JWT` tokens for authorization, and strict database validations.
@@ -122,20 +125,20 @@ The machine learning workflow processes demographic and clinical variables to ex
 OncoRisk-AI/
 │
 ├── frontend/             # Next.js Web Dashboard
-│   ├── app/              # App Router Pages & Layouts
-│   ├── components/       # Reusable UI Components
+│   ├── app/              # App Router Pages (Chat Assistant, Dashboard, History, etc.)
+│   ├── components/       # Reusable UI Components (Navbar, charts)
 │   ├── animations/       # Framer Motion Configs
 │   ├── charts/           # Recharts Visualizations
 │   ├── public/           # Static Assets
 │   └── styles/           # Global Styling
 │
 ├── backend/              # FastAPI Application
-│   ├── api/              # Route Handlers & Controllers
-│   ├── models/           # SQLAlchemy DB Models & Schemas
-│   ├── ml/               # Model Inference & Saved Pipelines
-│   ├── database/         # Session Configuration & Migrations
-│   ├── services/         # Business Logic Layer
-│   ├── utils/            # Shared Helpers (Logging, Security)
+│   ├── api/              # Route Handlers (auth, predict, predictions, admin, chatbot)
+│   ├── models/           # SQLAlchemy DB Models (user, chat message/session/feedback, prediction log)
+│   ├── ml/               # Model Inference, Training & Saved Pipelines
+│   ├── database/         # Session Configuration & Alembic Migrations
+│   ├── services/         # Business Logic Layer (AI, chatbot, caching, guardrails, prediction, etc.)
+│   ├── utils/            # Shared Helpers (Logging, Security configs)
 │   └── main.py           # Application Entrypoint
 │
 ├── datasets/             # Data Assets
@@ -168,10 +171,17 @@ FastAPI exposes interactive Swagger documentation at `/docs` when the server is 
 | `/api/auth/me` | `GET` | User JWT | Fetch the current logged-in user profile attributes. |
 | `/api/predict` | `POST` | Optional JWT | Process patient inputs and return cancer risk level + SHAP explainability. |
 | `/api/predictions/history` | `GET` | User JWT | Retrieve historical assessment submissions log for the authenticated user. |
-| `/api/predictions/analytics` | `GET` | User JWT | Retrieve aggregate metrics, risk distribution summaries, and trends. |
+| `/api/predictions/analytics` | `GET` | Admin JWT | Retrieve aggregate metrics, risk distribution summaries, and trends. |
 | `/api/admin/retrain` | `POST` | Admin JWT | Trigger an Optuna hyperparameter optimization run in the background. |
 | `/api/admin/retrain/status` | `GET` | Admin JWT | Stream status logs and metrics of the current retraining background thread. |
 | `/api/health` | `GET` | None | Check database connection status, ML model loaded status, and explainer capacity. |
+| `/api/chatbot/message` | `POST` | User JWT | Post a user query to the conversational assistant (with context & guardrails). |
+| `/api/chatbot/sessions` | `GET` | User JWT | List active chat sessions for the logged-in user. |
+| `/api/chatbot/sessions` | `POST` | User JWT | Create a new chat session. |
+| `/api/chatbot/sessions/{session_uuid}/messages` | `GET` | User JWT | Load historical messages in a session. |
+| `/api/chatbot/sessions/{session_uuid}` | `DELETE` | User JWT | Soft delete a chat session. |
+| `/api/chatbot/feedback` | `POST` | User JWT | Store or update user feedback (HELPFUL/NOT_HELPFUL) for a message. |
+| `/api/chatbot/clear` | `POST` | User JWT | Clear the active in-memory conversation context. |
 
 ---
 
@@ -266,9 +276,17 @@ docker compose up -d
    ```
 
 ### 4. Running Integration Tests
-To run the automated endpoint verification script locally:
+To run the automated verification scripts locally:
 ```bash
+# Run backend API integration tests
 .venv\Scripts\python backend\tests\test_api.py
+
+# Run conversational assistant (chatbot) integration tests
+.venv\Scripts\python backend\tests\test_chatbot.py
+
+# Or run the entire test suite using pytest
+pip install pytest pytest-cov
+pytest backend/tests/
 ```
 
 <details>
@@ -346,6 +364,28 @@ Below are design frameworks for the primary screens:
 |  - Obesity Profile (High Impact, +0.22 SHAP)                                      |
 |  - Smoking Habits (Medium Impact, +0.14 SHAP)                                     |
 |  - Processed Food Diet (Medium Impact, +0.09 SHAP)                                |
++-----------------------------------------------------------------------------------+
+```
+
+### Chat Assistant (Conversational AI)
+```
++-----------------------------------------------------------------------------------+
+|  OncoRisk AI Chat Assistant                                    [ID: 1] [ Logout ] |
++-----------------------------------------------------------------------------------+
+|  [New Chat Session]       |  Chat Assistant                                       |
+|                           |  Discuss clinical variables and lifestyle choices     |
+|  Recent Conversations     |  +-------------------------------------------------+  |
+|  - General Health...      |  | OncoRisk Advisor [Educational Guidance]         |  |
+|  - Lung Cancer Overview   |  | What lifestyle improvements should I make?      |  |
+|                           |  |                                                 |  |
+|                           |  | - Increase physical activity frequency          |  |
+|                           |  | - Reduce consumption of processed foods         |  |
+|                           |  |                                                 |  |
+|                           |  | Sources: [lifestyle] [prevention]               |  |
+|                           |  | [Thumbs Up] [Thumbs Down]                       |  |
+|                           |  +-------------------------------------------------+  |
+|                           |                                                       |
+|                           |  [ Type your question here...                  ] [Send] |
 +-----------------------------------------------------------------------------------+
 ```
 
