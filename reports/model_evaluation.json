@@ -1,18 +1,18 @@
 {
     "model_name": "Random Forest",
-    "weighted_f1": 0.8793055555555556,
-    "accuracy": 0.885,
+    "weighted_f1": 0.872542304783513,
+    "accuracy": 0.8775,
     "classification_report": {
         "Low": {
-            "precision": 0.7818181818181819,
+            "precision": 0.7413793103448276,
             "recall": 0.6615384615384615,
-            "f1-score": 0.7166666666666667,
+            "f1-score": 0.6991869918699187,
             "support": 65.0
         },
         "Medium": {
-            "precision": 0.9039039039039038,
-            "recall": 0.9555555555555556,
-            "f1-score": 0.9290123456790124,
+            "precision": 0.9030303030303031,
+            "recall": 0.946031746031746,
+            "f1-score": 0.924031007751938,
             "support": 315.0
         },
         "High": {
@@ -21,17 +21,17 @@
             "f1-score": 0.625,
             "support": 20.0
         },
-        "accuracy": 0.885,
+        "accuracy": 0.8775,
         "macro avg": {
-            "precision": 0.8396851396851397,
-            "recall": 0.7056980056980057,
-            "f1-score": 0.7568930041152263,
+            "precision": 0.825914315569488,
+            "recall": 0.7025234025234025,
+            "f1-score": 0.7494059998739523,
             "support": 400.0
         },
         "weighted avg": {
-            "precision": 0.8805364455364456,
-            "recall": 0.885,
-            "f1-score": 0.8793055555555556,
+            "precision": 0.8732771682340649,
+            "recall": 0.8775,
+            "f1-score": 0.872542304783513,
             "support": 400.0
         }
     },
@@ -42,8 +42,8 @@
             0
         ],
         [
-            12,
-            301,
+            15,
+            298,
             2
         ],
         [
@@ -53,27 +53,27 @@
         ]
     ],
     "feature_importances": {
-        "Air_Pollution": 0.16713797146026715,
-        "Alcohol_Use": 0.1229201210062989,
-        "Diet_Salted_Processed": 0.10951511474023791,
-        "Smoking": 0.10718719032696855,
-        "Occupational_Hazards": 0.08113393641167363,
-        "Diet_Red_Meat": 0.08062635392494162,
-        "Obesity": 0.06547082089193637,
-        "Fruit_Veg_Intake": 0.0326787974584803,
-        "Physical_Activity": 0.030744108428830522,
-        "BMI": 0.026813998902991184,
-        "Age": 0.02467726309523988,
-        "Calcium_Intake": 0.024657268041826375,
-        "Physical_Activity_Level": 0.022830067446212403,
-        "Cancer_Type_Lung": 0.019357649237230462,
-        "Cancer_Type_Prostate": 0.01637308794502503,
-        "Family_History": 0.014233940413480665,
-        "Gender": 0.012340605765644767,
-        "Cancer_Type_Colon": 0.012117744321825724,
-        "H_Pylori_Infection": 0.009482362681767427,
-        "Cancer_Type_Skin": 0.008588055156353061,
-        "Cancer_Type_Breast": 0.008513173893869517,
-        "BRCA_Mutation": 0.0026003684488984688
+        "Air_Pollution": 0.17466155931684302,
+        "Alcohol_Use": 0.12229969840109493,
+        "Diet_Salted_Processed": 0.12042087985012392,
+        "Smoking": 0.11375661625044466,
+        "Diet_Red_Meat": 0.08143958236699125,
+        "Occupational_Hazards": 0.07938027027894977,
+        "Obesity": 0.06440204608466388,
+        "Fruit_Veg_Intake": 0.031744470904128595,
+        "Physical_Activity": 0.027757682150758297,
+        "BMI": 0.02193991547655125,
+        "Calcium_Intake": 0.02165898719800625,
+        "Age": 0.021536314011376827,
+        "Cancer_Type_Lung": 0.0200771022424943,
+        "Physical_Activity_Level": 0.019641009681873798,
+        "Cancer_Type_Prostate": 0.015535437116303463,
+        "Family_History": 0.013861509694694421,
+        "Gender": 0.011594581958858775,
+        "Cancer_Type_Colon": 0.010722635920634827,
+        "H_Pylori_Infection": 0.00969257952511163,
+        "Cancer_Type_Skin": 0.00785424005036272,
+        "Cancer_Type_Breast": 0.007669209177384239,
+        "BRCA_Mutation": 0.002353672342349258
     }
 }

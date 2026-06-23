@@ -29,7 +29,7 @@ services:
       - DATABASE_URL=postgresql://postgres:prod_secure_pass_987654321@db:5432/oncorisk_db
       - ADMIN_EMAIL=admin@oncorisk.ai
       - ADMIN_PASSWORD=AdminSecurePassword2026!
-      - BACKEND_CORS_ORIGINS=http://localhost,http://127.0.0.1
+      - BACKEND_CORS_ORIGINS=https://oncorisk-ai.vercel.app,http://localhost,http://127.0.0.1
     depends_on:
       - db
     expose:

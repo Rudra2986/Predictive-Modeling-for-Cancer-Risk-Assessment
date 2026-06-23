@@ -10,10 +10,10 @@ class Settings(BaseSettings):
     
     # Security Configuration
     SECRET_KEY: str = "local-development-secret-key-replace-in-production-12345"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     
     # CORS Origins (comma separated in .env file)
-    BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000", "https://oncorisk-ai.vercel.app"]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod

@@ -80,17 +80,16 @@ def get_prediction_analytics(db: Session, user_id: Optional[int] = None) -> Dict
         day = today - timedelta(days=i)
         trends[day.strftime("%Y-%m-%d")] = 0
         
-    from sqlalchemy import cast, Date
     # Query aggregated count by day to avoid loading all rows into memory
     trend_query = db.query(
-        cast(PredictionLog.created_at, Date).label("day"),
+        func.date(PredictionLog.created_at).label("day"),
         func.count(PredictionLog.id).label("count")
     ).filter(PredictionLog.created_at >= cutoff)
     
     if user_id is not None:
         trend_query = trend_query.filter(PredictionLog.user_id == user_id)
         
-    trend_results = trend_query.group_by(cast(PredictionLog.created_at, Date)).all()
+    trend_results = trend_query.group_by(func.date(PredictionLog.created_at)).all()
     
     for day, count in trend_results:
         if day:
