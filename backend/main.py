@@ -21,9 +21,12 @@ app = FastAPI(
 )
 
 # Configure CORS for frontend integration
+resolved_origins = [str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS]
+logger.info(f"Resolved CORS Allowed Origins: {resolved_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_origins=resolved_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
